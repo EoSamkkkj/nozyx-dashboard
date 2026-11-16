@@ -92,7 +92,7 @@ export default function Settings({ data, commit, notify, storage }) {
       <div className="card stack">
         <h2>Armazenamento</h2>
         {storage === 'banco' ? (
-          <p className="muted" style={{ fontSize: 14 }}>Os dados ficam salvos no banco online (Upstash Redis), protegidos pela sua senha. Dá para acessar de qualquer aparelho. O banco guarda também as 30 últimas versões, como segurança.</p>
+          <p className="muted" style={{ fontSize: 14 }}>Os dados ficam salvos no banco online (Neon Postgres), protegidos pela sua senha. Dá para acessar de qualquer aparelho. O banco guarda também as 30 últimas versões, como segurança.</p>
         ) : (
           <p className="alert warn">Banco não configurado: este é o modo de teste e os dados somem quando o servidor reinicia.</p>
         )}
