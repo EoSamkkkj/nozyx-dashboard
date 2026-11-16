@@ -1,0 +1,11 @@
+import { requireAuth, USER } from '@/lib/auth';
+import { hasRedis, loadData } from '@/lib/db';
+import App from '@/components/App';
+
+export const dynamic = 'force-dynamic';
+
+export default async function Home() {
+  await requireAuth();
+  const data = await loadData(USER);
+  return <App initial={data} storage={hasRedis ? 'banco' : 'memoria'} />;
+}
