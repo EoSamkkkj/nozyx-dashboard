@@ -68,6 +68,69 @@ export function EvolutionChart({ buckets, unit }) {
   );
 }
 
+/** Vendido acumulado no mês atual × mês anterior, com a linha da meta. */
+export function MonthRaceChart({ race }) {
+  const [hover, setHover] = useState(null);
+  const box = useRef(null);
+  const W = 720, H = 220, L = 54, R = 10, T = 12, B = 26;
+  const n = Math.max(race.days, race.previous.length);
+  const max = Math.max(1, race.goal, ...race.current, ...race.previous);
+  const step = niceStep(max / 4);
+  const top = Math.ceil(max / step) * step;
+  const x = (i) => L + ((W - L - R) * i) / (n - 1);
+  const y = (v) => T + (H - T - B) * (1 - v / top);
+  const path = (arr) => arr.map((v, i) => `${i ? 'L' : 'M'}${x(i).toFixed(1)},${y(v).toFixed(1)}`).join(' ');
+  const area = race.current.length ? `${path(race.current)} L${x(race.current.length - 1)},${y(0)} L${x(0)},${y(0)} Z` : '';
+  const last = race.current.length - 1;
+
+  const onMove = (e) => {
+    const r = box.current.getBoundingClientRect();
+    const px = ((e.clientX - r.left) / r.width) * W;
+    const i = Math.min(n - 1, Math.max(0, Math.round(((px - L) / (W - L - R)) * (n - 1))));
+    setHover({ i, left: (x(i) / W) * r.width, top: (y(Math.max(race.current[i] ?? 0, race.previous[i] ?? 0)) / H) * r.height });
+  };
+
+  return (
+    <div style={{ position: 'relative' }} ref={box} onMouseMove={onMove} onMouseLeave={() => setHover(null)}>
+      <svg className="chart" viewBox={`0 0 ${W} ${H}`} role="img" aria-label="Vendas acumuladas no mês">
+        <defs>
+          <linearGradient id="race-fill" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0" stopColor="var(--accent)" stopOpacity=".35" />
+            <stop offset="1" stopColor="var(--accent)" stopOpacity="0" />
+          </linearGradient>
+        </defs>
+        {[0, 1, 2, 3, 4].map((k) => (
+          <g key={k}>
+            <line x1={L} x2={W - R} y1={y((top / 4) * k)} y2={y((top / 4) * k)} stroke="rgba(221,238,255,.07)" />
+            <text x={L - 8} y={y((top / 4) * k) + 4} textAnchor="end">{short((top / 4) * k)}</text>
+          </g>
+        ))}
+        {[1, 5, 10, 15, 20, 25, n].filter((d) => d <= n).map((d) => (
+          <text key={d} x={x(d - 1)} y={H - 6} textAnchor="middle">{d}</text>
+        ))}
+        {race.goal > 0 && (
+          <g>
+            <line x1={L} x2={W - R} y1={y(race.goal)} y2={y(race.goal)} stroke="var(--warn)" strokeDasharray="5 5" opacity=".8" />
+            <text x={W - R} y={y(race.goal) - 6} textAnchor="end" style={{ fill: 'var(--warn)' }}>meta</text>
+          </g>
+        )}
+        <path d={path(race.previous)} fill="none" stroke="var(--faint)" strokeWidth="1.6" strokeDasharray="4 4" />
+        {area && <path d={area} fill="url(#race-fill)" />}
+        <path d={path(race.current)} fill="none" stroke="var(--accent)" strokeWidth="2.4" strokeLinejoin="round" />
+        {last >= 0 && <circle cx={x(last)} cy={y(race.current[last])} r="4.5" fill="var(--accent)" stroke="var(--card)" strokeWidth="2" />}
+        {hover && <line x1={x(hover.i)} x2={x(hover.i)} y1={T} y2={H - B} stroke="rgba(221,238,255,.15)" />}
+      </svg>
+      {hover && (
+        <div className="tip" style={{ left: hover.left, top: hover.top }}>
+          <div className="faint">Até o dia {hover.i + 1}</div>
+          {hover.i <= last && <div>{race.label}: <b>{money(race.current[hover.i])}</b></div>}
+          {race.previous[hover.i] != null && <div>{race.prevLabel}: <b>{money(race.previous[hover.i])}</b></div>}
+        </div>
+      )}
+    </div>
+  );
+}
+
 function niceStep(raw) {
   const p = 10 ** Math.floor(Math.log10(Math.max(raw, 1)));
   const f = raw / p;

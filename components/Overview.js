@@ -1,8 +1,8 @@
 'use client';
 
 import { useMemo, useState } from 'react';
-import { PERIODS, brDate, goalProgress, money, periodRange, series, summary, todaySP } from '@/lib/model';
-import { EvolutionChart, PlanBars } from './Charts';
+import { PERIODS, brDate, goalProgress, monthRace, money, periodRange, series, summary, todaySP } from '@/lib/model';
+import { EvolutionChart, MonthRaceChart, PlanBars } from './Charts';
 import { Icon } from './ui';
 
 export default function Overview({ data, newSale, go, openSale }) {
@@ -13,6 +13,7 @@ export default function Overview({ data, newSale, go, openSale }) {
   const s = useMemo(() => summary(data, a, b), [data, a, b]);
   const chart = useMemo(() => series(data, a, b), [data, a, b]);
   const goal = goalProgress(data, today);
+  const race = useMemo(() => monthRace(data, today), [data, today]);
 
   if (!data.sales.length) {
     return (
@@ -77,6 +78,8 @@ export default function Overview({ data, newSale, go, openSale }) {
         <Goal goal={goal} go={go} />
       </div>
 
+      <MonthCard race={race} />
+
       <div className="card" style={{ marginTop: 14 }}>
         <div className="card-title">
           <h2>Vendido × recebido {chart.unit !== 'dia' && <span className="faint">(por {chart.unit})</span>}</h2>
@@ -99,6 +102,33 @@ export default function Overview({ data, newSale, go, openSale }) {
         </div>
       </div>
     </>
+  );
+}
+
+function MonthCard({ race }) {
+  const now = race.current[race.current.length - 1] || 0;
+  const before = race.previous[Math.min(race.today, race.previous.length) - 1] || 0;
+  const diff = now - before;
+  return (
+    <div className="card" style={{ marginTop: 14 }}>
+      <div className="card-title">
+        <div>
+          <h2>Vendas do mês</h2>
+          <p className="faint" style={{ marginTop: 2 }}>
+            Acumulado de {race.label}: <b style={{ color: 'var(--text)' }}>{money(now)}</b>
+            {before > 0 && (
+              <> · <span style={{ color: diff >= 0 ? 'var(--ok)' : 'var(--warn)' }}>{diff >= 0 ? '+' : '−'}{money(Math.abs(diff))}</span> em relação ao mesmo dia de {race.prevLabel}</>
+            )}
+          </p>
+        </div>
+        <div className="legend">
+          <span><i style={{ background: 'var(--accent)' }} />{race.label}</span>
+          <span><i style={{ background: 'var(--faint)' }} />{race.prevLabel}</span>
+          {race.goal > 0 && <span><i style={{ background: 'var(--warn)' }} />Meta</span>}
+        </div>
+      </div>
+      <MonthRaceChart race={race} />
+    </div>
   );
 }
 
