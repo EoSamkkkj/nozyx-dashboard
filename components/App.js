@@ -11,6 +11,7 @@ import Plans from './Plans';
 import Settings from './Settings';
 import SaleForm from './SaleForm';
 import SaleDetail from './SaleDetail';
+import { useAppShell } from './AppSetup';
 
 const TABS = [
   ['geral', 'Visão geral', 'Visão geral'],
@@ -28,6 +29,7 @@ export default function App({ initial, storage }) {
   const [detailId, setDetailId] = useState(null);
   const [saving, setSaving] = useState(false);
   const [toast, setToast] = useState('');
+  useAppShell();
 
   useEffect(() => {
     const h = window.location.hash.slice(1);

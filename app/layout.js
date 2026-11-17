@@ -3,10 +3,11 @@ import './globals.css';
 export const metadata = {
   title: 'Painel financeiro · Nozyx',
   robots: { index: false, follow: false },
-  icons: { icon: '/favicon.svg' },
+  icons: { icon: '/favicon.svg', apple: '/apple-touch-icon.png' },
+  appleWebApp: { capable: true, title: 'Nozyx', statusBarStyle: 'black-translucent' },
 };
 
-export const viewport = { themeColor: '#11151D', width: 'device-width', initialScale: 1 };
+export const viewport = { themeColor: '#11151D', width: 'device-width', initialScale: 1, viewportFit: 'cover' };
 
 export default function RootLayout({ children }) {
   return (
