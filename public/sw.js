@@ -16,7 +16,10 @@ self.addEventListener('push', (e) => {
       badge: '/badge.png',
       tag: msg.tag,
       data: { url: msg.url || '/' },
-      vibrate: [80, 40, 80],
+      vibrate: [120, 60, 120, 60, 240],
+      renotify: Boolean(msg.tag),
+      timestamp: Date.now(),
+      actions: [{ action: 'abrir', title: 'Ver no painel' }],
     })
   );
 });

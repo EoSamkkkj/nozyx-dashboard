@@ -30,9 +30,15 @@ export default function Overview({ data, newSale, go, openSale }) {
   }
 
   const rangeText = a === b ? brDate(a) : `${brDate(a)} a ${brDate(b)}`;
+  const month = summary(data, `${today.slice(0, 7)}-01`, today);
 
   return (
     <>
+      <Hero data={data} race={race} goal={goal} month={month} openTotal={s.openTotal} go={go} />
+
+      <div className="section-head">
+        <h2>Desempenho</h2>
+      </div>
       <div className="filters">
         <div className="seg">
           {PERIODS.map(([k, label]) => (
@@ -57,26 +63,14 @@ export default function Overview({ data, newSale, go, openSale }) {
       )}
 
       <div className="kpis">
-        <Kpi hero label="Total vendido" value={money(s.sold)} note="pela data da venda" />
-        <Kpi label="Total recebido" value={money(s.received)} note="pela data de cada recebimento" />
-        <Kpi label="Pendente das vendas do período" value={money(s.pending)} note="quanto falta receber delas" />
-        <Kpi label="Vendas" value={s.count} />
-        <Kpi label="Vídeos vendidos" value={s.videos} />
-        <Kpi label="Ticket médio" value={money(s.ticket)} note="por venda" />
+        <Kpi icon="trend" tone="accent" label="Total vendido" value={money(s.sold)} note="pela data da venda" />
+        <Kpi icon="check" tone="ok" label="Total recebido" value={money(s.received)} note="pela data de cada recebimento" />
+        <Kpi icon="relogio" tone="warn" label="Pendente do período" value={money(s.pending)} note="quanto falta receber delas" />
+        <Kpi icon="vendas" tone="accent" label="Vendas" value={s.count} />
+        <Kpi icon="play" tone="violet" label="Vídeos vendidos" value={s.videos} />
+        <Kpi icon="ticket" tone="ok" label="Ticket médio" value={money(s.ticket)} note="por venda" />
       </div>
 
-      <div className="split">
-        <div className="card open-card">
-          <div className="spread">
-            <span className="muted" style={{ fontSize: 13, fontWeight: 500 }}>Total a receber</span>
-            <span className="chip info">Todas as vendas · ignora o filtro</span>
-          </div>
-          <div className="value">{money(s.openTotal)}</div>
-          <p className="faint">Soma dos saldos em aberto de todas as vendas não canceladas.</p>
-          <button className="link-btn" style={{ marginTop: 10 }} onClick={() => go('vendas')}>Ver vendas com saldo →</button>
-        </div>
-        <Goal goal={goal} go={go} />
-      </div>
 
       <MonthCard race={race} />
 
@@ -101,6 +95,7 @@ export default function Overview({ data, newSale, go, openSale }) {
           {s.byPlan.length ? <PlanBars rows={s.byPlan} field="count" format={(v) => v} alt /> : <p className="faint">Sem vendas no período.</p>}
         </div>
       </div>
+      <p className="faint foot-note">Valores vendidos e recebidos. Custos não entram nesta versão, então nada aqui é lucro.</p>
     </>
   );
 }
@@ -132,9 +127,113 @@ function MonthCard({ race }) {
   );
 }
 
-function Kpi({ label, value, note, hero }) {
+function greeting() {
+  const h = Number(new Intl.DateTimeFormat('pt-BR', { hour: 'numeric', hour12: false, timeZone: 'America/Sao_Paulo' }).format(new Date()));
+  return h < 5 ? 'Boa noite' : h < 12 ? 'Bom dia' : h < 18 ? 'Boa tarde' : 'Boa noite';
+}
+
+function Hero({ data, race, goal, month, openTotal, go }) {
+  const now = race.current[race.current.length - 1] || 0;
+  const before = race.previous[Math.min(race.today, race.previous.length) - 1] || 0;
+  const diff = now - before;
+  const pct = before ? Math.round((diff / before) * 100) : null;
+  const date = new Intl.DateTimeFormat('pt-BR', { weekday: 'long', day: 'numeric', month: 'long', timeZone: 'America/Sao_Paulo' }).format(new Date());
+  const monthName = new Intl.DateTimeFormat('pt-BR', { month: 'long', timeZone: 'America/Sao_Paulo' }).format(new Date());
+
   return (
-    <div className={`card kpi${hero ? ' hero' : ''}`}>
+    <section className="hero-panel">
+      <div className="hero-top">
+        <div>
+          <p className="hero-hello">{greeting()}</p>
+          <p className="hero-date">{date.charAt(0).toUpperCase() + date.slice(1)}</p>
+        </div>
+        <span className="live"><i /> Ao vivo</span>
+      </div>
+
+      <div className="hero-main">
+        <div className="grow">
+          <p className="hero-label">Vendido em {monthName}</p>
+          <p className="hero-value">{money(now)}</p>
+          {before > 0 ? (
+            <span className={`trend ${diff >= 0 ? 'up' : 'down'}`}>
+              {diff >= 0 ? '▲' : '▼'} {pct !== null ? `${Math.abs(pct)}%` : money(Math.abs(diff))}
+              <span> vs. mesmo dia de {race.prevLabel}</span>
+            </span>
+          ) : (
+            <span className="trend up">{month.count} venda{month.count === 1 ? '' : 's'} este mês</span>
+          )}
+          <Spark values={race.current} days={race.days} />
+        </div>
+        <GoalRing goal={goal} go={go} />
+      </div>
+
+      <div className="hero-stats">
+        <div><span>Recebido</span><b>{money(month.received)}</b></div>
+        <div><span>A receber</span><b>{money(openTotal)}</b></div>
+        <div><span>Vendas</span><b>{month.count}</b></div>
+      </div>
+    </section>
+  );
+}
+
+function Spark({ values, days }) {
+  if (values.length < 2) return null;
+  const W = 300, H = 54, max = Math.max(...values, 1);
+  const pts = values.map((v, i) => [(i / (days - 1)) * W, H - 4 - (v / max) * (H - 10)]);
+  const line = pts.map(([x, y], i) => `${i ? 'L' : 'M'}${x.toFixed(1)} ${y.toFixed(1)}`).join(' ');
+  const [lx, ly] = pts[pts.length - 1];
+  return (
+    <svg className="spark" viewBox={`0 0 ${W} ${H}`} preserveAspectRatio="none" aria-hidden="true">
+      <defs>
+        <linearGradient id="spark-g" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0" stopColor="#6CB8FF" stopOpacity=".45" />
+          <stop offset="1" stopColor="#6CB8FF" stopOpacity="0" />
+        </linearGradient>
+      </defs>
+      <path d={`${line} L${lx} ${H} L0 ${H} Z`} fill="url(#spark-g)" />
+      <path d={line} fill="none" stroke="#9BD0FF" strokeWidth="2" vectorEffect="non-scaling-stroke" />
+      <circle cx={lx} cy={ly} r="3.5" fill="#fff" vectorEffect="non-scaling-stroke" />
+    </svg>
+  );
+}
+
+function GoalRing({ goal, go }) {
+  if (!goal.goal) {
+    return (
+      <button className="ring empty-ring" onClick={() => go('config')}>
+        <Icon name="alvo" size={22} />
+        <span>Definir meta</span>
+      </button>
+    );
+  }
+  const r = 46, c = 2 * Math.PI * r, p = Math.min(100, goal.pct) / 100;
+  const over = goal.sold >= goal.goal;
+  return (
+    <div className="ring">
+      <svg viewBox="0 0 110 110" width="128" height="128">
+        <defs>
+          <linearGradient id="ring-g" x1="0" y1="0" x2="1" y2="1">
+            <stop offset="0" stopColor={over ? '#7fe3b8' : '#9BD0FF'} />
+            <stop offset="1" stopColor={over ? '#3ccf91' : '#4A98FF'} />
+          </linearGradient>
+        </defs>
+        <circle cx="55" cy="55" r={r} fill="none" stroke="rgba(221,238,255,.12)" strokeWidth="9" />
+        <circle cx="55" cy="55" r={r} fill="none" stroke="url(#ring-g)" strokeWidth="9" strokeLinecap="round"
+          strokeDasharray={`${c * p} ${c}`} transform="rotate(-90 55 55)" className="ring-arc" />
+      </svg>
+      <div className="ring-in">
+        <b>{goal.pct}%</b>
+        <span>da meta</span>
+      </div>
+      <p className="ring-sub">{over ? `Meta batida! +${money(goal.extra)}` : `Faltam ${money(goal.missing)}`}</p>
+    </div>
+  );
+}
+
+function Kpi({ label, value, note, icon, tone = 'accent' }) {
+  return (
+    <div className={`card kpi tone-${tone}`}>
+      {icon && <span className="kpi-ic"><Icon name={icon} size={17} /></span>}
       <div className="label">{label}</div>
       <div className="value">{value}</div>
       {note && <div className="note">{note}</div>}
@@ -142,29 +241,3 @@ function Kpi({ label, value, note, hero }) {
   );
 }
 
-function Goal({ goal, go }) {
-  const month = new Intl.DateTimeFormat('pt-BR', { month: 'long', timeZone: 'America/Sao_Paulo' }).format(new Date());
-  if (!goal.goal) {
-    return (
-      <div className="card">
-        <span className="muted" style={{ fontSize: 13, fontWeight: 500 }}>Meta de {month}</span>
-        <p className="faint" style={{ margin: '10px 0 12px' }}>Defina uma meta mensal de vendas para acompanhar o progresso aqui.</p>
-        <button className="btn sm" onClick={() => go('config')}><Icon name="alvo" size={15} /> Definir meta</button>
-      </div>
-    );
-  }
-  const over = goal.sold >= goal.goal;
-  return (
-    <div className="card">
-      <div className="spread">
-        <span className="muted" style={{ fontSize: 13, fontWeight: 500 }}>Meta de {month}</span>
-        <b style={{ color: over ? 'var(--ok)' : 'var(--accent-2)' }}>{goal.pct}%</b>
-      </div>
-      <div className="bar-track"><div className={`bar-fill${over ? ' over' : ''}`} style={{ width: `${Math.min(100, goal.pct)}%` }} /></div>
-      <div className="spread" style={{ fontSize: 14 }}>
-        <span>{money(goal.sold)} <span className="faint">de {money(goal.goal)}</span></span>
-        {over ? <span style={{ color: 'var(--ok)' }}>Meta batida! +{money(goal.extra)}</span> : <span className="muted">Faltam {money(goal.missing)}</span>}
-      </div>
-    </div>
-  );
-}

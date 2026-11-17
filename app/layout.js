@@ -1,4 +1,5 @@
 import './globals.css';
+import NativeFeel from '@/components/NativeFeel';
 
 export const metadata = {
   title: 'Painel financeiro · Nozyx',
@@ -7,7 +8,7 @@ export const metadata = {
   appleWebApp: { capable: true, title: 'Nozyx', statusBarStyle: 'black-translucent' },
 };
 
-export const viewport = { themeColor: '#11151D', width: 'device-width', initialScale: 1, viewportFit: 'cover' };
+export const viewport = { themeColor: '#11151D', width: 'device-width', initialScale: 1, maximumScale: 1, userScalable: false, viewportFit: 'cover', colorScheme: 'dark' };
 
 export default function RootLayout({ children }) {
   return (
@@ -17,7 +18,10 @@ export default function RootLayout({ children }) {
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="" />
         <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
       </head>
-      <body>{children}</body>
+      <body>
+        <NativeFeel />
+        {children}
+      </body>
     </html>
   );
 }

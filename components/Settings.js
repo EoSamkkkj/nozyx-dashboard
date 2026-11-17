@@ -4,6 +4,7 @@ import { useRef, useState } from 'react';
 import { money, moneyInput, normalize, parseMoney, paymentsCsv, salesCsv, todaySP } from '@/lib/model';
 import { Field, Icon } from './ui';
 import AppSetup from './AppSetup';
+import Security from './Security';
 
 function download(name, text, type) {
   const url = URL.createObjectURL(new Blob([text], { type }));
@@ -52,6 +53,7 @@ export default function Settings({ data, commit, notify, storage }) {
   return (
     <div className="stack" style={{ gap: 14, maxWidth: 760 }}>
       <AppSetup notify={notify} />
+      <Security notify={notify} />
       <form className="card stack" onSubmit={save}>
         <h2>Painel</h2>
         <div className="grid2">

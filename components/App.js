@@ -12,6 +12,7 @@ import Settings from './Settings';
 import SaleForm from './SaleForm';
 import SaleDetail from './SaleDetail';
 import { useAppShell } from './AppSetup';
+import LockScreen, { useLock } from './Lock';
 
 const TABS = [
   ['geral', 'Visão geral', 'Visão geral'],
@@ -30,10 +31,16 @@ export default function App({ initial, storage }) {
   const [saving, setSaving] = useState(false);
   const [toast, setToast] = useState('');
   useAppShell();
+  const [locked, unlock] = useLock();
 
   useEffect(() => {
-    const h = window.location.hash.slice(1);
-    if (TABS.some(([k]) => k === h)) setTab(h);
+    const read = () => {
+      const h = window.location.hash.slice(1);
+      if (TABS.some(([k]) => k === h)) setTab(h);
+    };
+    read();
+    window.addEventListener('hashchange', read); // toque na notificação abre a aba certa
+    return () => window.removeEventListener('hashchange', read);
   }, []);
 
   useEffect(() => {
@@ -146,7 +153,6 @@ export default function App({ initial, storage }) {
           <div className="top">
             <div>
               <h1>{title}</h1>
-              {tab === 'geral' && <p className="sub">Valores vendidos e recebidos. Custos não entram nesta versão, então nada aqui é lucro.</p>}
             </div>
             <button className="btn primary new-sale" onClick={() => ctx.newSale()}>
               <Icon name="plus" size={16} /> Nova venda
@@ -175,6 +181,7 @@ export default function App({ initial, storage }) {
       {form && <SaleForm {...ctx} preset={form} onClose={() => setForm(null)} />}
       {detail && <SaleDetail {...ctx} sale={detail} onClose={() => setDetailId(null)} />}
       {toast && <div className="toast" role="status">{toast}</div>}
+      {locked && <LockScreen name={name} onUnlock={unlock} />}
     </div>
   );
 }

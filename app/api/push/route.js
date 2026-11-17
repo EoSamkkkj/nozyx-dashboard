@@ -25,7 +25,7 @@ export async function POST(req) {
       return NextResponse.json({ devices: await deviceCount(USER) });
     }
     if (body.action === 'test') {
-      const sent = await notify(USER, { title: '💰 Venda registrada! R$ 250,00', body: 'Teste · é assim que as vendas vão chegar', tag: 'teste' });
+      const sent = await notify(USER, { title: 'Venda aprovada! 🎉', body: 'Valor: R$ 250,00\nTeste · é assim que as vendas vão chegar', tag: 'teste', url: '/#vendas' });
       return NextResponse.json({ sent });
     }
     return NextResponse.json({ error: 'Ação inválida.' }, { status: 400 });
