@@ -1,0 +1,8 @@
+[{
+      "relation": ["delegate_permission/common.handle_all_urls"],
+      "target": {
+        "namespace": "android_app",
+        "package_name": "app.vercel.nozyx_dashboard.twa",
+        "sha256_cert_fingerprints": ["92:D7:AD:44:88:0B:0A:F5:E3:D4:F9:02:4F:24:15:F6:8C:F7:09:F3:11:76:86:E9:38:A5:C3:66:F0:98:85:76"]
+      }
+    }]
