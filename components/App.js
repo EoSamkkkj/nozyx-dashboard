@@ -40,6 +40,11 @@ export default function App({ initial, storage }) {
   useEffect(() => setReady(true), []);
   const play = ready && !locked;
   useEffect(() => {
+    // janelas abrem fora do painel (no <body>), então a cor e o "esconder valores" valem lá também
+    document.documentElement.style.setProperty('--accent', data.settings.accent);
+    document.body.classList.toggle('hide-values', hidden);
+  }, [data.settings.accent, hidden]);
+  useEffect(() => {
     if (!play) return;
     const t = setTimeout(() => setIntro(false), 2200); // animação de entrada só na abertura
     return () => clearTimeout(t);
@@ -201,11 +206,13 @@ export default function App({ initial, storage }) {
               <Icon name="plus" size={16} /> Nova venda
             </button>
           </div>
+          <div key={tab} className="tab-view">
           {tab === 'geral' && <Overview {...ctx} />}
           {tab === 'vendas' && <Sales {...ctx} />}
           {tab === 'clientes' && <Clients {...ctx} />}
           {tab === 'planos' && <Plans {...ctx} />}
           {tab === 'config' && <Settings {...ctx} storage={storage} />}
+          </div>
         </main>
       </div>
 

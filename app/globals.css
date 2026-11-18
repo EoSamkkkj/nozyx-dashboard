@@ -445,3 +445,48 @@ input.secret:not(:placeholder-shown) { letter-spacing: .12em; }
 .intro .fab { animation: nzPop .7s both; animation-delay: .75s; }
 .intro .side .nav-btn, .intro .side .btn { animation: nzBounce .6s both; animation-delay: .2s; }
 @media (prefers-reduced-motion: reduce) { .intro *, .intro { animation: none !important; } }
+
+/* ---------- animação ao tocar (botões, +, abas) ---------- */
+@keyframes nzTap { 0% { transform: scale(1); } 30% { transform: scale(.9); } 60% { transform: scale(1.06); } 80% { transform: scale(.98); } 100% { transform: scale(1); } }
+@keyframes nzTapSoft { 0% { transform: scale(1); } 35% { transform: scale(.97); } 70% { transform: scale(1.01); } 100% { transform: scale(1); } }
+@keyframes nzJump { 0% { transform: translateY(0) scale(1); } 20% { transform: translateY(0) scale(1.1, .86); } 45% { transform: translateY(-16px) scale(.92, 1.1); } 65% { transform: translateY(0) scale(1.08, .92); } 80% { transform: translateY(-4px) scale(.98, 1.02); } 100% { transform: none; } }
+@keyframes nzIconHop { 0% { transform: none; } 30% { transform: translateY(-7px) scale(1.18) rotate(-6deg); } 55% { transform: translateY(0) scale(.92); } 75% { transform: translateY(-2px) scale(1.04); } 100% { transform: none; } }
+@keyframes nzPlusSpin { 0% { transform: rotate(0); } 100% { transform: rotate(180deg); } }
+:is(button, .btn, [role="tab"]) { transition: transform .12s ease, background-color .2s, color .2s, border-color .2s, box-shadow .2s; }
+:is(button, .btn, [role="tab"]):not(:disabled):active { transform: scale(.94); }
+.nz-tap { animation: nzTap .42s cubic-bezier(.3,.7,.4,1.4); }
+:is(.click, .item, .card).nz-tap { animation: nzTapSoft .35s ease; }
+.fab.nz-tap { animation: nzJump .6s cubic-bezier(.3,.7,.4,1); }
+.fab.nz-tap svg { animation: nzPlusSpin .45s cubic-bezier(.3,.7,.4,1.3); }
+.tabbar button.nz-tap { animation: none; }
+.tabbar button.nz-tap svg { animation: nzIconHop .5s cubic-bezier(.3,.7,.4,1.3); }
+.tabbar button svg { transition: transform .2s; }
+.tabbar button.on svg { transform: translateY(-1px) scale(1.08); }
+.nav-btn.nz-tap svg { animation: nzIconHop .5s cubic-bezier(.3,.7,.4,1.3); }
+.eye-btn.nz-tap { animation: nzPop .45s both; }
+.hero-periods button.on { animation: nzTap .4s cubic-bezier(.3,.7,.4,1.4); }
+.chips-pick button.on { animation: nzTap .4s cubic-bezier(.3,.7,.4,1.4); }
+
+/* ---------- troca de aba, janelas e avisos ---------- */
+@keyframes nzView { 0% { opacity: 0; transform: translateY(14px); } 100% { opacity: 1; transform: none; } }
+.tab-view { animation: nzView .38s cubic-bezier(.2,.8,.3,1) backwards; }
+.intro .tab-view { animation: none; }
+.tab-view > * , .tab-view > .stack > * { animation: nzBounce .5s backwards; }
+.tab-view > :nth-child(2), .tab-view > .stack > :nth-child(2) { animation-delay: .05s; }
+.tab-view > :nth-child(3), .tab-view > .stack > :nth-child(3) { animation-delay: .1s; }
+.tab-view > :nth-child(4), .tab-view > .stack > :nth-child(4) { animation-delay: .15s; }
+.tab-view > :nth-child(n+5), .tab-view > .stack > :nth-child(n+5) { animation-delay: .2s; }
+.intro .tab-view > *, .intro .tab-view > .stack > * { animation: none; }
+.tab-view .item, .tab-view tbody tr { animation: nzView .4s backwards; }
+.tab-view .item:nth-child(2), .tab-view tbody tr:nth-child(2) { animation-delay: .04s; }
+.tab-view .item:nth-child(3), .tab-view tbody tr:nth-child(3) { animation-delay: .08s; }
+.tab-view .item:nth-child(4), .tab-view tbody tr:nth-child(4) { animation-delay: .12s; }
+.tab-view .item:nth-child(5), .tab-view tbody tr:nth-child(5) { animation-delay: .16s; }
+.tab-view .item:nth-child(n+6), .tab-view tbody tr:nth-child(n+6) { animation-delay: .2s; }
+@keyframes nzModal { 0% { opacity: 0; transform: translateY(40px) scale(.94); } 60% { opacity: 1; transform: translateY(-6px) scale(1.01); } 100% { opacity: 1; transform: none; } }
+.modal { animation: nzModal .45s cubic-bezier(.2,.8,.3,1.1) backwards; }
+.modal .field, .modal .grid2, .modal .grid3, .modal .stats3, .modal .row { animation: nzView .4s backwards; animation-delay: .12s; }
+@keyframes nzToast { 0% { opacity: 0; transform: translate(-50%, 30px) scale(.9); } 60% { opacity: 1; transform: translate(-50%, -6px) scale(1.02); } 100% { opacity: 1; transform: translate(-50%, 0); } }
+.toast { animation: nzToast .45s cubic-bezier(.2,.8,.3,1.2) both; }
+.alert { animation: nzBounce .45s backwards; }
+@media (prefers-reduced-motion: reduce) { .nz-tap, .nz-tap svg, .tab-view, .tab-view *, .modal, .modal *, .toast { animation: none !important; } }
