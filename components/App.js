@@ -44,6 +44,12 @@ export default function App({ initial, storage }) {
   }, []);
 
   useEffect(() => {
+    const onToast = (e) => setToast(e.detail);
+    window.addEventListener('nz-toast', onToast); // notificação que chega com o app aberto
+    return () => window.removeEventListener('nz-toast', onToast);
+  }, []);
+
+  useEffect(() => {
     if (!toast) return;
     const t = setTimeout(() => setToast(''), 3800);
     return () => clearTimeout(t);

@@ -1,0 +1,16 @@
+{
+  "name": "nozyx-app",
+  "private": true,
+  "version": "1.0.0",
+  "description": "App Android nativo da Nozyx (Capacitor) que abre o painel online",
+  "dependencies": {
+    "@capacitor/android": "^7.6.10",
+    "@capacitor/core": "^7.6.10",
+    "@capacitor/push-notifications": "^7.0.7",
+    "@capacitor/status-bar": "^7.0.6",
+    "@capgo/capacitor-native-biometric": "^7.6.0"
+  },
+  "devDependencies": {
+    "@capacitor/cli": "^7.6.10"
+  }
+}

@@ -3,7 +3,8 @@
 import { useEffect, useState } from 'react';
 import { logout } from '@/app/actions';
 import { Icon, Modal } from './ui';
-import { PinPad, lockNow, pinEnabled, removePin, savePin } from './Lock';
+import { PinPad, bioEnabled, lockNow, pinEnabled, removePin, savePin, setBio } from './Lock';
+import { biometryAvailable, verifyBiometry } from './native';
 
 export default function Security({ notify }) {
   const [on, setOn] = useState(false);
@@ -11,7 +12,21 @@ export default function Security({ notify }) {
   const [first, setFirst] = useState('');
   const [error, setError] = useState('');
 
-  useEffect(() => setOn(pinEnabled()), []);
+  const [bioOk, setBioOk] = useState(false);
+  const [bio, setBioOn] = useState(false);
+  useEffect(() => {
+    setOn(pinEnabled());
+    setBioOn(bioEnabled());
+    biometryAvailable().then(setBioOk);
+  }, []);
+
+  async function toggleBio() {
+    if (bio) { setBio(false); setBioOn(false); return notify('Digital desligada.'); }
+    if (!(await verifyBiometry())) return notify('Não confirmou a digital.');
+    setBio(true);
+    setBioOn(true);
+    notify('Pronto: o app vai abrir com a sua digital.');
+  }
 
   const close = () => { setCreating(false); setFirst(''); setError(''); };
 
@@ -43,6 +58,9 @@ export default function Security({ notify }) {
           </>
         ) : (
           <button className="btn primary" onClick={() => setCreating(true)}><Icon name="cadeado" size={16} /> Criar PIN</button>
+        )}
+        {on && bioOk && (
+          <button className={`btn ${bio ? '' : 'primary'}`} onClick={toggleBio}><Icon name="digital" size={16} /> {bio ? 'Desligar digital' : 'Abrir com digital'}</button>
         )}
         <form action={logout}><button className="btn ghost"><Icon name="sair" size={16} /> Sair deste aparelho</button></form>
       </div>

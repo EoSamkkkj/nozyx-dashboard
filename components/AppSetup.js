@@ -1,11 +1,17 @@
 'use client';
 
+import { isNative, startNativePush } from './native';
+
 import { useEffect, useState } from 'react';
 import { Icon } from './ui';
 
 /** Registra o service worker e guarda o convite de instalação do Android/Chrome. */
 export function useAppShell() {
   useEffect(() => {
+    if (isNative()) {
+      startNativePush({ onMessage: (n) => window.dispatchEvent(new CustomEvent('nz-toast', { detail: `${n.title || 'Nozyx'} · ${(n.body || '').replace(/\n/g, ' · ')}` })) }).catch(() => {});
+      return;
+    }
     if ('serviceWorker' in navigator) navigator.serviceWorker.register('/sw.js').catch(() => {});
     const onPrompt = (e) => {
       e.preventDefault();
@@ -41,12 +47,16 @@ export default function AppSetup({ notify }) {
     const ios = /iphone|ipad|ipod/i.test(navigator.userAgent);
     const installed = window.matchMedia('(display-mode: standalone)').matches || navigator.standalone === true;
     const push = 'serviceWorker' in navigator && 'PushManager' in window && 'Notification' in window;
-    setEnv({ ios, installed, push, android: /android/i.test(navigator.userAgent) });
+    const native = isNative();
+    setEnv({ ios, installed, push, native, android: /android/i.test(navigator.userAgent) });
+    if (native) {
+      startNativePush({ ask: false }).then((st) => setSubscribed(st === 'ativa')).catch(() => {});
+    }
     setCanInstall(Boolean(window.__nzInstall));
     const onInstall = () => setCanInstall(true);
     window.addEventListener('nz-install', onInstall);
     fetch('/api/push').then((r) => r.json()).then((j) => setDevices(j.devices || 0)).catch(() => {});
-    if (push) {
+    if (push && !native) {
       navigator.serviceWorker.ready.then((reg) => reg.pushManager.getSubscription()).then((s) => setSubscribed(Boolean(s))).catch(() => {});
     }
     return () => window.removeEventListener('nz-install', onInstall);
@@ -116,6 +126,35 @@ export default function AppSetup({ notify }) {
   }
 
   const needsInstallFirst = env.ios && !env.installed;
+
+  async function enableNative() {
+    setBusy(true);
+    const st = await startNativePush().catch(() => 'erro');
+    setBusy(false);
+    if (st === 'ativa') { setSubscribed(true); notify('Notificações ativadas neste aparelho.'); setTimeout(() => fetch('/api/push').then((r) => r.json()).then((j) => setDevices(j.devices || 0)), 2500); }
+    else if (st === 'negada') notify('Notificações bloqueadas. Libere em Configurações do Android → Apps → Nozyx → Notificações.');
+    else notify('Não deu para ativar agora. Tente de novo.');
+  }
+
+  if (env.native) {
+    return (
+      <div className="card stack">
+        <div className="spread">
+          <h2>Notificações</h2>
+          {devices > 0 && <span className="chip ok">{devices} aparelho{devices > 1 ? 's' : ''} recebendo</span>}
+        </div>
+        <p className="muted" style={{ fontSize: 14 }}>Aviso na hora a cada venda aprovada ou pagamento recebido, mesmo com o app fechado.</p>
+        {subscribed ? (
+          <div className="row">
+            <span className="chip ok">Ativadas neste aparelho</span>
+            <button className="btn sm" onClick={test}>Enviar teste</button>
+          </div>
+        ) : (
+          <button className="btn primary" style={{ alignSelf: 'flex-start' }} onClick={enableNative} disabled={busy}>{busy ? 'Ativando…' : 'Ativar notificações'}</button>
+        )}
+      </div>
+    );
+  }
 
   return (
     <div className="card stack">

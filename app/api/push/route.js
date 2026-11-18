@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { isAuthed, USER } from '@/lib/auth';
+import { fcmSubscribe, fcmUnsubscribe } from '@/lib/fcm';
 import { deviceCount, notify, publicKey, subscribe, unsubscribe } from '@/lib/push';
 
 export const dynamic = 'force-dynamic';
@@ -19,6 +20,14 @@ export async function POST(req) {
     if (body.action === 'subscribe') {
       const devices = await subscribe(USER, body.subscription, body.device);
       return NextResponse.json({ devices });
+    }
+    if (body.action === 'subscribe-native') {
+      await fcmSubscribe(USER, body.token, body.device);
+      return NextResponse.json({ devices: await deviceCount(USER) });
+    }
+    if (body.action === 'unsubscribe-native') {
+      await fcmUnsubscribe(USER, body.token);
+      return NextResponse.json({ devices: await deviceCount(USER) });
     }
     if (body.action === 'unsubscribe') {
       await unsubscribe(USER, body.endpoint);

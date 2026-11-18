@@ -1,0 +1,19 @@
+{
+  "appId": "app.vercel.nozyx_dashboard.twa",
+  "appName": "Nozyx",
+  "webDir": "www",
+  "backgroundColor": "#11151D",
+  "server": {
+    "url": "https://nozyx-dashboard.vercel.app",
+    "androidScheme": "https",
+    "errorPath": "index.html"
+  },
+  "android": {
+    "allowMixedContent": false,
+    "backgroundColor": "#11151D",
+    "webContentsDebuggingEnabled": false
+  },
+  "plugins": {
+    "PushNotifications": { "presentationOptions": ["badge", "sound", "alert"] }
+  }
+}

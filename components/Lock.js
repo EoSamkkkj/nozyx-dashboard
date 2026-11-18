@@ -4,6 +4,7 @@ import { useCallback, useEffect, useState } from 'react';
 import { logout } from '@/app/actions';
 import Logo from './Logo';
 import { Icon } from './ui';
+import { biometryAvailable, verifyBiometry } from './native';
 
 // Bloqueio por PIN deste aparelho (tipo app de banco). O PIN fica só aqui,
 // guardado como hash; a senha de administrador continua valendo para entrar.
@@ -32,7 +33,12 @@ export async function savePin(pin) {
 
 export function removePin() {
   store.set(KEY, null);
+  store.set(BIO, null);
 }
+
+const BIO = 'nz_bio';
+export const bioEnabled = () => store.get(BIO) === '1';
+export const setBio = (on) => store.set(BIO, on ? '1' : null);
 
 export function lockNow() {
   store.set(UNLOCKED, null, sessionStorage);
@@ -102,6 +108,22 @@ export function PinPad({ onDone, error, shake }) {
 export default function LockScreen({ name, onUnlock }) {
   const [error, setError] = useState('');
   const [shake, setShake] = useState(false);
+  const [bio, setBioOk] = useState(false);
+
+  const tryBio = useCallback(async () => {
+    if (await verifyBiometry()) {
+      store.set(UNLOCKED, '1', sessionStorage);
+      onUnlock();
+    }
+  }, [onUnlock]);
+
+  useEffect(() => {
+    if (!bioEnabled()) return;
+    biometryAvailable().then((ok) => {
+      setBioOk(ok);
+      if (ok) tryBio();
+    });
+  }, [tryBio]);
 
   async function check(pin) {
     const saved = JSON.parse(store.get(KEY) || 'null');
@@ -132,6 +154,7 @@ export default function LockScreen({ name, onUnlock }) {
         <h2>{name}</h2>
         <p className="muted">Digite seu PIN para abrir o painel</p>
         <PinPad onDone={check} error={error} shake={shake} />
+        {bio && <button className="btn" style={{ marginBottom: 10 }} onClick={tryBio}><Icon name="digital" size={18} /> Usar digital</button>}
         <form action={logout}>
           <button className="link-btn" onClick={() => removePin()}>Esqueci o PIN · entrar com a senha</button>
         </form>
