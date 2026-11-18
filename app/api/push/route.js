@@ -2,6 +2,9 @@ import { NextResponse } from 'next/server';
 import { isAuthed, USER } from '@/lib/auth';
 import { fcmSubscribe, fcmUnsubscribe } from '@/lib/fcm';
 import { deviceCount, notify, publicKey, subscribe, unsubscribe } from '@/lib/push';
+import { loadData } from '@/lib/db';
+import { dailyMessages } from '@/lib/daily';
+import { todaySP } from '@/lib/model';
 
 export const dynamic = 'force-dynamic';
 
@@ -35,6 +38,11 @@ export async function POST(req) {
     }
     if (body.action === 'test') {
       const sent = await notify(USER, { title: 'Venda aprovada! 🎉', body: 'Valor: R$ 250,00\nTeste · é assim que as vendas vão chegar', tag: 'teste', url: '/#vendas' });
+      return NextResponse.json({ sent });
+    }
+    if (body.action === 'test-resumo') {
+      let sent = 0;
+      for (const m of dailyMessages(await loadData(USER), todaySP())) sent += await notify(USER, m);
       return NextResponse.json({ sent });
     }
     return NextResponse.json({ error: 'Ação inválida.' }, { status: 400 });

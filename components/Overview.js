@@ -5,7 +5,7 @@ import { PERIODS, addDays, brDate, diffDays, goalProgress, monthRace, money, per
 import { EvolutionChart, MonthRaceChart, PlanBars } from './Charts';
 import { Icon } from './ui';
 
-export default function Overview({ data, newSale, go, openSale }) {
+export default function Overview({ data, newSale, go, openSale, hidden, toggleHide }) {
   const [period, setPeriod] = useState('hoje');
   const today = todaySP();
   const [custom, setCustom] = useState({ from: today.slice(0, 8) + '01', to: today });
@@ -33,7 +33,7 @@ export default function Overview({ data, newSale, go, openSale }) {
 
   return (
     <>
-      <Hero data={data} period={period} setPeriod={setPeriod} custom={custom} setCustom={setCustom} a={a} b={b} s={s} race={race} goal={goal} go={go} />
+      <Hero hidden={hidden} toggleHide={toggleHide} data={data} period={period} setPeriod={setPeriod} custom={custom} setCustom={setCustom} a={a} b={b} s={s} race={race} goal={goal} go={go} />
 
       <div className="section-head">
         <h2>Desempenho</h2>
@@ -119,7 +119,7 @@ function greeting() {
 
 const LABEL = { hoje: 'Vendido hoje', mes: '', 7: 'Vendido nos últimos 7 dias', 30: 'Vendido nos últimos 30 dias', 60: 'Vendido nos últimos 60 dias', tudo: 'Vendido em todo o período' };
 
-function Hero({ data, period, setPeriod, custom, setCustom, a, b, s, race, goal, go }) {
+function Hero({ hidden, toggleHide, data, period, setPeriod, custom, setCustom, a, b, s, race, goal, go }) {
   const date = new Intl.DateTimeFormat('pt-BR', { weekday: 'long', day: 'numeric', month: 'long', timeZone: 'America/Sao_Paulo' }).format(new Date());
   const monthName = new Intl.DateTimeFormat('pt-BR', { month: 'long', timeZone: 'America/Sao_Paulo' }).format(new Date());
   const label = period === 'mes' ? `Vendido em ${monthName}` : period === 'custom' ? (a === b ? `Vendido em ${brDate(a)}` : `Vendido de ${brDate(a)} a ${brDate(b)}`) : LABEL[period];
@@ -148,7 +148,12 @@ function Hero({ data, period, setPeriod, custom, setCustom, a, b, s, race, goal,
           <p className="hero-hello">{greeting()}</p>
           <p className="hero-date">{date.charAt(0).toUpperCase() + date.slice(1)}</p>
         </div>
-        <span className="live"><i /> Ao vivo</span>
+        <div className="hero-tools">
+          <button className="eye-btn" onClick={toggleHide} aria-label={hidden ? 'Mostrar valores' : 'Esconder valores'} aria-pressed={hidden}>
+            <Icon name={hidden ? 'olhoOff' : 'olho'} size={17} />
+          </button>
+          <span className="live"><i /> Ao vivo</span>
+        </div>
       </div>
 
       <div className="hero-periods" role="tablist" aria-label="Período">

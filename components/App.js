@@ -13,6 +13,7 @@ import SaleForm from './SaleForm';
 import SaleDetail from './SaleDetail';
 import { useAppShell } from './AppSetup';
 import LockScreen, { useLock } from './Lock';
+import PullRefresh from './PullRefresh';
 
 const TABS = [
   ['geral', 'Visão geral', 'Visão geral'],
@@ -30,6 +31,7 @@ export default function App({ initial, storage }) {
   const [detailId, setDetailId] = useState(null);
   const [saving, setSaving] = useState(false);
   const [toast, setToast] = useState('');
+  const [hidden, setHidden] = useState(false);
   useAppShell();
   const [locked, unlock] = useLock();
 
@@ -42,6 +44,14 @@ export default function App({ initial, storage }) {
     window.addEventListener('hashchange', read); // toque na notificação abre a aba certa
     return () => window.removeEventListener('hashchange', read);
   }, []);
+
+  useEffect(() => {
+    try { setHidden(localStorage.getItem('nz_hide') === '1'); } catch {}
+  }, []);
+  const toggleHide = () => setHidden((h) => {
+    try { localStorage.setItem('nz_hide', h ? '0' : '1'); } catch {}
+    return !h;
+  });
 
   useEffect(() => {
     const onToast = (e) => setToast(e.detail);
@@ -106,6 +116,18 @@ export default function App({ initial, storage }) {
     }
   }, []);
 
+  /** Busca os dados mais novos do servidor (puxar para atualizar). */
+  const reload = useCallback(async () => {
+    try {
+      const r = await fetch('/api/data', { cache: 'no-store' });
+      if (r.status === 401) { window.location.href = '/login'; return; }
+      const j = await r.json();
+      if (j.data) apply(j.data);
+    } catch {
+      setToast('Sem conexão: não deu para atualizar.');
+    }
+  }, []);
+
   const ctx = {
     data,
     commit,
@@ -114,6 +136,9 @@ export default function App({ initial, storage }) {
     newSale: (preset = {}) => setForm(preset),
     editSale: (sale) => setForm({ sale }),
     openSale: (id) => setDetailId(id),
+    hidden,
+    toggleHide,
+    reload,
   };
 
   const detail = detailId && data.sales.find((s) => s.id === detailId);
@@ -121,7 +146,8 @@ export default function App({ initial, storage }) {
   const title = TABS.find(([k]) => k === tab)[1];
 
   return (
-    <div style={{ '--accent': data.settings.accent }}>
+    <div className={hidden ? 'hide-values' : ''} style={{ '--accent': data.settings.accent }}>
+      <PullRefresh onRefresh={reload} />
       <div className="mobile-bar">
         <div className="brand" style={{ padding: 0 }}>
           <Logo size={24} /> {name}

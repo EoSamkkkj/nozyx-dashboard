@@ -342,3 +342,17 @@ input.secret:not(:placeholder-shown) { letter-spacing: .12em; }
   .filters .seg { flex-wrap: nowrap; overflow-x: auto; max-width: 100%; scrollbar-width: none; }
   .filters .seg::-webkit-scrollbar { display: none; }
 }
+
+/* ---------- esconder valores ---------- */
+.hero-tools { display: flex; align-items: center; gap: 8px; flex: none; }
+.hero-tools .live { white-space: nowrap; }
+.eye-btn { display: grid; place-items: center; width: 32px; height: 32px; border-radius: 50%; color: #fff; cursor: pointer; background: rgba(9, 14, 24, .3); border: 1px solid rgba(221,238,255,.18); }
+.eye-btn[aria-pressed="true"] { background: #fff; color: #1F2430; }
+.hide-values :is(.hero-value, .hero-stats b, .trend, .ring-sub, .kpi .value, .num, .v, .card-title .faint b, .spark) { filter: blur(9px); transition: filter .2s; user-select: none; }
+.hide-values .hero-stats div:last-child b, .hide-values .kpi:nth-child(4) .value, .hide-values .kpi:nth-child(5) .value { filter: none; }
+
+/* ---------- puxar para atualizar ---------- */
+.ptr { position: fixed; top: 0; left: 50%; z-index: 60; display: grid; place-items: center; width: 40px; height: 40px; border-radius: 50%; color: var(--accent, #4A98FF); background: var(--card); border: 1px solid var(--line-2); box-shadow: 0 6px 20px rgba(0,0,0,.35); pointer-events: none; }
+.ptr .spin { animation: ptr-spin .7s linear infinite; }
+.ptr-dot { position: absolute; bottom: 5px; width: 4px; height: 4px; border-radius: 50%; background: currentColor; }
+@keyframes ptr-spin { to { transform: rotate(360deg); } }

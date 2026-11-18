@@ -119,8 +119,9 @@ export default function AppSetup({ notify }) {
     }
   }
 
-  async function test() {
-    const r = await fetch('/api/push', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ action: 'test' }) });
+  async function test(e) {
+    const action = e?.currentTarget?.dataset?.action || 'test';
+    const r = await fetch('/api/push', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ action }) });
     const j = await r.json();
     notify(j.sent ? `Notificação de teste enviada para ${j.sent} aparelho(s).` : 'Nenhum aparelho recebeu. Ative as notificações primeiro.');
   }
@@ -143,11 +144,12 @@ export default function AppSetup({ notify }) {
           <h2>Notificações</h2>
           {devices > 0 && <span className="chip ok">{devices} aparelho{devices > 1 ? 's' : ''} recebendo</span>}
         </div>
-        <p className="muted" style={{ fontSize: 14 }}>Aviso na hora a cada venda aprovada ou pagamento recebido, mesmo com o app fechado.</p>
+        <p className="muted" style={{ fontSize: 14 }}>Aviso na hora a cada venda aprovada ou pagamento recebido, mesmo com o app fechado. Às 22h chega o resumo do dia e, se houver, as cobranças atrasadas (mais de 7 dias).</p>
         {subscribed ? (
           <div className="row">
             <span className="chip ok">Ativadas neste aparelho</span>
             <button className="btn sm" onClick={test}>Enviar teste</button>
+            <button className="btn sm ghost" data-action="test-resumo" onClick={test}>Ver resumo do dia</button>
           </div>
         ) : (
           <button className="btn primary" style={{ alignSelf: 'flex-start' }} onClick={enableNative} disabled={busy}>{busy ? 'Ativando…' : 'Ativar notificações'}</button>
@@ -200,6 +202,7 @@ export default function AppSetup({ notify }) {
           <div className="row">
             <span className="chip ok">Ativadas neste aparelho</span>
             <button className="btn sm" onClick={test}>Enviar teste</button>
+            <button className="btn sm ghost" data-action="test-resumo" onClick={test}>Ver resumo do dia</button>
             <button className="btn sm ghost" onClick={disable} disabled={busy}>Desativar</button>
           </div>
         ) : (
