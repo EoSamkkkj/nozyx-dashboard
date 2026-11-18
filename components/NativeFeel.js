@@ -3,12 +3,11 @@
 import { useEffect } from 'react';
 
 const TAP = 'button, .btn, a.btn, [role="tab"], .click, .item[style*="pointer"], .item.click, .chip-btn, .rank a';
-const reduced = () => window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
 
 /** Toque com bounce: reinicia a animação no elemento tocado (e uma vibração bem leve no celular). */
 function tap(e) {
   const el = e.target.closest?.(TAP);
-  if (!el || el.disabled || reduced()) return;
+  if (!el || el.disabled) return;
   el.classList.remove('nz-tap');
   void el.offsetWidth; // reinicia a animação mesmo em toques seguidos
   el.classList.add('nz-tap');

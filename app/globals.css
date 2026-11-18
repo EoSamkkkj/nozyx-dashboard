@@ -199,7 +199,6 @@ details.more[open] { padding-bottom: 14px; }
 @keyframes fade { from { opacity: 0; } }
 @keyframes pop { from { opacity: 0; transform: translateY(10px) scale(.98); } }
 @keyframes up { from { opacity: 0; transform: translate(-50%, 10px); } }
-@media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation: none !important; transition: none !important; } }
 
 /* ---------- login ---------- */
 .login-wrap { position: relative; min-height: 100vh; min-height: 100dvh; display: grid; place-items: center; padding: calc(24px + env(safe-area-inset-top)) 20px 24px; overflow: hidden; }
@@ -444,7 +443,6 @@ input.secret:not(:placeholder-shown) { letter-spacing: .12em; }
 .intro .tabbar button:nth-child(5) { animation-delay: .53s; }
 .intro .fab { animation: nzPop .7s both; animation-delay: .75s; }
 .intro .side .nav-btn, .intro .side .btn { animation: nzBounce .6s both; animation-delay: .2s; }
-@media (prefers-reduced-motion: reduce) { .intro *, .intro { animation: none !important; } }
 
 /* ---------- animação ao tocar (botões, +, abas) ---------- */
 @keyframes nzTap { 0% { transform: scale(1); } 30% { transform: scale(.9); } 60% { transform: scale(1.06); } 80% { transform: scale(.98); } 100% { transform: scale(1); } }
@@ -489,4 +487,3 @@ input.secret:not(:placeholder-shown) { letter-spacing: .12em; }
 @keyframes nzToast { 0% { opacity: 0; transform: translate(-50%, 30px) scale(.9); } 60% { opacity: 1; transform: translate(-50%, -6px) scale(1.02); } 100% { opacity: 1; transform: translate(-50%, 0); } }
 .toast { animation: nzToast .45s cubic-bezier(.2,.8,.3,1.2) both; }
 .alert { animation: nzBounce .45s backwards; }
-@media (prefers-reduced-motion: reduce) { .nz-tap, .nz-tap svg, .tab-view, .tab-view *, .modal, .modal *, .toast { animation: none !important; } }

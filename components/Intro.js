@@ -7,7 +7,6 @@ import { money } from '@/lib/model';
 export const IntroContext = createContext(true);
 
 const ease = (t) => 1 - Math.pow(1 - t, 4);
-const reduced = () => typeof window !== 'undefined' && window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
 
 /** Número que sobe até o valor: de 0 na entrada, do valor anterior quando muda. */
 export function CountUp({ value, format = money, delay = 0 }) {
@@ -18,7 +17,6 @@ export function CountUp({ value, format = money, delay = 0 }) {
 
   useEffect(() => {
     if (!play) return;
-    if (reduced()) { from.current = value; setShown(value); return; }
     const start = from.current;
     const dur = first.current ? 1100 : 550;
     const wait = first.current ? delay : 0;
