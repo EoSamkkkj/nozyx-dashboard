@@ -127,7 +127,7 @@ function greeting() {
   return h < 5 ? 'Boa noite' : h < 12 ? 'Bom dia' : h < 18 ? 'Boa tarde' : 'Boa noite';
 }
 
-const LABEL = { hoje: 'Vendido hoje', mes: '', 7: 'Vendido nos últimos 7 dias', 30: 'Vendido nos últimos 30 dias', 60: 'Vendido nos últimos 60 dias', tudo: 'Vendido em todo o período' };
+const LABEL = { hoje: 'Vendido hoje', ontem: 'Vendido ontem', mes: '', 7: 'Vendido nos últimos 7 dias', 30: 'Vendido nos últimos 30 dias', 60: 'Vendido nos últimos 60 dias', tudo: 'Vendido em todo o período' };
 
 function Hero({ rec, fc, hidden, toggleHide, data, period, setPeriod, custom, setCustom, a, b, s, race, goal, go }) {
   const date = new Intl.DateTimeFormat('pt-BR', { weekday: 'long', day: 'numeric', month: 'long', timeZone: 'America/Sao_Paulo' }).format(new Date());
@@ -142,12 +142,12 @@ function Hero({ rec, fc, hidden, toggleHide, data, period, setPeriod, custom, se
   } else if (period !== 'tudo') {
     const span = diffDays(a, b) + 1;
     before = summary(data, addDays(a, -span), addDays(a, -1)).sold;
-    vs = period === 'hoje' ? 'vs. ontem' : span === 1 ? 'vs. dia anterior' : `vs. ${span} dias anteriores`;
+    vs = period === 'hoje' ? 'vs. ontem' : period === 'ontem' ? 'vs. anteontem' : span === 1 ? 'vs. dia anterior' : `vs. ${span} dias anteriores`;
   }
   const diff = s.sold - before;
   const pct = before ? Math.round((diff / before) * 100) : null;
   const spark = useMemo(() => {
-    const [x, y] = period === 'hoje' ? [addDays(b, -6), b] : [a, b];
+    const [x, y] = period === 'hoje' || period === 'ontem' ? [addDays(b, -6), b] : [a, b];
     return series(data, x, y).buckets.map((k) => k.sold);
   }, [data, a, b, period]);
 
@@ -194,7 +194,7 @@ function Hero({ rec, fc, hidden, toggleHide, data, period, setPeriod, custom, se
             </span>
           ) : (
             <span className="trend up">
-              {s.count ? `${s.count} venda${s.count === 1 ? '' : 's'}` : period === 'hoje' ? 'Nenhuma venda hoje ainda' : 'Nenhuma venda no período'}
+              {s.count ? `${s.count} venda${s.count === 1 ? '' : 's'}` : period === 'hoje' ? 'Nenhuma venda hoje ainda' : period === 'ontem' ? 'Nenhuma venda ontem' : 'Nenhuma venda no período'}
             </span>
           )}
           {period === 'mes' && fc.value > 0 && fc.daysLeft > 0 && (
