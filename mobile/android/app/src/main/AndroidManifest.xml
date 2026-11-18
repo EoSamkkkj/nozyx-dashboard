@@ -11,7 +11,7 @@
 
         <meta-data android:name="com.google.firebase.messaging.default_notification_icon" android:resource="@drawable/ic_stat_nozyx" />
         <meta-data android:name="com.google.firebase.messaging.default_notification_color" android:resource="@color/nozyx_azul" />
-        <meta-data android:name="com.google.firebase.messaging.default_notification_channel_id" android:value="vendas" />
+        <meta-data android:name="com.google.firebase.messaging.default_notification_channel_id" android:value="vendas_som" />
 
         <activity
             android:configChanges="orientation|keyboardHidden|keyboard|screenSize|locale|smallestScreenSize|screenLayout|uiMode|navigation"

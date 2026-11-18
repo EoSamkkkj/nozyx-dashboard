@@ -14,14 +14,19 @@ export async function startNativePush({ onMessage, ask = true } = {}) {
   if (!isNative() || !Push) return 'indisponivel';
   if (!window.__nzPushListeners) {
     window.__nzPushListeners = true;
-    Push.createChannel?.({ id: 'vendas', name: 'Vendas e pagamentos', description: 'Avisos de venda aprovada e pagamento recebido', importance: 5, visibility: 1, vibration: true, lights: true, lightColor: '#4A98FF' }).catch(() => {});
+    // O som do canal não muda depois de criado no Android, por isso o canal novo "vendas_som".
+    Push.deleteChannel?.({ id: 'vendas' }).catch(() => {});
+    Push.createChannel?.({ id: 'vendas_som', name: 'Vendas e pagamentos', description: 'Avisos de venda aprovada e pagamento recebido, com som de caixa', importance: 5, visibility: 1, vibration: true, lights: true, lightColor: '#4A98FF', sound: 'venda.mp3' }).catch(() => {});
     Push.addListener('registration', ({ value }) => {
       window.__nzPushToken = value;
       fetch('/api/push', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ action: 'subscribe-native', token: value, device: deviceName() }) }).catch(() => {});
       window.dispatchEvent(new Event('nz-push'));
     });
     Push.addListener('registrationError', (e) => console.error('[push nativo]', e?.error));
-    Push.addListener('pushNotificationReceived', (n) => window.__nzOnPush?.(n));
+    Push.addListener('pushNotificationReceived', (n) => {
+      playSaleSound(); // com o app aberto o Android não mostra o aviso, então o som toca aqui
+      window.__nzOnPush?.(n);
+    });
     Push.addListener('pushNotificationActionPerformed', ({ notification }) => {
       const url = notification?.data?.url;
       if (url && url.startsWith('/')) window.location.href = url;
@@ -61,4 +66,13 @@ export async function verifyBiometry() {
   } catch {
     return false;
   }
+}
+
+let saleAudio;
+export function playSaleSound() {
+  try {
+    saleAudio ||= new Audio('/venda.mp3');
+    saleAudio.currentTime = 0;
+    saleAudio.play().catch(() => {});
+  } catch {}
 }
