@@ -33,7 +33,7 @@ export default function LoginForm({ disabled }) {
           type={type}
           name="codigo"
           className={masked && !show ? 'secret' : ''}
-          placeholder="Senha de administrador"
+          placeholder="Sua senha"
           autoComplete="off"
           autoCapitalize="off"
           autoCorrect="off"

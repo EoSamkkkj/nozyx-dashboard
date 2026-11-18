@@ -8,7 +8,7 @@ import { CountUp } from './Intro';
 import { fraseDoDia } from '@/lib/frases';
 import { whatsLink } from '@/lib/whats';
 
-export default function Overview({ data, newSale, go, openSale, hidden, toggleHide }) {
+export default function Overview({ data, newSale, go, openSale, hidden, toggleHide, readOnly }) {
   const [period, setPeriod] = useState('hoje');
   const today = todaySP();
   const [custom, setCustom] = useState({ from: today.slice(0, 8) + '01', to: today });
@@ -28,11 +28,11 @@ export default function Overview({ data, newSale, go, openSale, hidden, toggleHi
       <div className="card empty">
         <div className="big"><Icon name="vendas" size={26} /></div>
         <h2>Nenhuma venda ainda</h2>
-        <p>Cadastre a primeira venda, mesmo que seja de outro dia: é só escolher a data certa. Os números aparecem aqui automaticamente.</p>
-        <div className="row" style={{ justifyContent: 'center' }}>
+        <p>{readOnly ? 'Assim que a primeira venda for cadastrada, os números aparecem aqui.' : 'Cadastre a primeira venda, mesmo que seja de outro dia: é só escolher a data certa. Os números aparecem aqui automaticamente.'}</p>
+        {!readOnly && <div className="row" style={{ justifyContent: 'center' }}>
           <button className="btn primary" onClick={() => newSale()}><Icon name="plus" size={16} /> Cadastrar primeira venda</button>
           <button className="btn" onClick={() => go('planos')}>Definir preços dos planos</button>
-        </div>
+        </div>}
       </div>
     );
   }
@@ -41,7 +41,7 @@ export default function Overview({ data, newSale, go, openSale, hidden, toggleHi
 
   return (
     <>
-      <Hero st={st} rec={rec} fc={fc} hidden={hidden} toggleHide={toggleHide} data={data} period={period} setPeriod={setPeriod} custom={custom} setCustom={setCustom} a={a} b={b} s={s} race={race} goal={goal} go={go} />
+      <Hero readOnly={readOnly} st={st} rec={rec} fc={fc} hidden={hidden} toggleHide={toggleHide} data={data} period={period} setPeriod={setPeriod} custom={custom} setCustom={setCustom} a={a} b={b} s={s} race={race} goal={goal} go={go} />
 
       <Frase today={today} />
 
@@ -97,7 +97,7 @@ export default function Overview({ data, newSale, go, openSale, hidden, toggleHi
         </div>
       )}
 
-      <Ranking rank={rank} openSale={openSale} data={data} />
+      <Ranking rank={rank} readOnly={readOnly} />
       <p className="faint foot-note">Valores vendidos e recebidos. Custos não entram nesta versão, então nada aqui é lucro.</p>
     </>
   );
@@ -140,7 +140,7 @@ function greeting() {
 
 const LABEL = { hoje: 'Vendido hoje', ontem: 'Vendido ontem', mes: '', 7: 'Vendido nos últimos 7 dias', 30: 'Vendido nos últimos 30 dias', 60: 'Vendido nos últimos 60 dias', tudo: 'Vendido em todo o período' };
 
-function Hero({ st, rec, fc, hidden, toggleHide, data, period, setPeriod, custom, setCustom, a, b, s, race, goal, go }) {
+function Hero({ readOnly, st, rec, fc, hidden, toggleHide, data, period, setPeriod, custom, setCustom, a, b, s, race, goal, go }) {
   const date = new Intl.DateTimeFormat('pt-BR', { weekday: 'long', day: 'numeric', month: 'long', timeZone: 'America/Sao_Paulo' }).format(new Date());
   const monthName = new Intl.DateTimeFormat('pt-BR', { month: 'long', timeZone: 'America/Sao_Paulo' }).format(new Date());
   const label = period === 'mes' ? `Vendido em ${monthName}` : period === 'custom' ? (a === b ? `Vendido em ${brDate(a)}` : `Vendido de ${brDate(a)} a ${brDate(b)}`) : LABEL[period];
@@ -217,7 +217,7 @@ function Hero({ st, rec, fc, hidden, toggleHide, data, period, setPeriod, custom
           )}
           <Spark values={spark} days={spark.length} />
         </div>
-        <GoalRing goal={goal} go={go} />
+        <GoalRing goal={goal} go={readOnly ? null : go} />
       </div>
 
       <div className="hero-stats">
@@ -252,6 +252,7 @@ function Spark({ values, days }) {
 
 function GoalRing({ goal, go }) {
   if (!goal.goal) {
+    if (!go) return null;
     return (
       <button className="ring empty-ring" onClick={() => go('config')}>
         <Icon name="alvo" size={22} />
@@ -311,7 +312,7 @@ function whats(contact, name) {
   return whatsLink(contact, `Oi, ${name.split(' ')[0]}! Tudo bem? Faz um tempinho que a gente não faz um vídeo juntos. Bora criar o próximo?`);
 }
 
-function Ranking({ rank }) {
+function Ranking({ rank, readOnly }) {
   if (!rank.top.length) return null;
   return (
     <div className="split">
@@ -332,7 +333,7 @@ function Ranking({ rank }) {
         {rank.gone.length ? (
           <ul className="rank">
             {rank.gone.map((r) => {
-              const link = whats(r.contact, r.name);
+              const link = !readOnly && whats(r.contact, r.name);
               return (
                 <li key={r.id}>
                   <div className="grow"><b>{r.name}</b><span className="faint">última compra há {r.days} dias · {money(r.total)}</span></div>

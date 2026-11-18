@@ -47,7 +47,7 @@ export default function Security({ notify }) {
       </div>
       <p className="muted" style={{ fontSize: 14 }}>
         Bloqueio por PIN de 4 dígitos, como app de banco: pede o PIN ao abrir e quando você volta depois de 2 minutos fora. Vale só para este aparelho.
-        Errou 5 vezes, o app sai da conta e pede a senha de administrador.
+        Errou 5 vezes, o app sai da conta e pede a senha de novo.
       </p>
       <div className="row">
         {on ? (

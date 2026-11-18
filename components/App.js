@@ -24,7 +24,11 @@ const TABS = [
   ['config', 'Configurações', 'Ajustes'],
 ];
 
-export default function App({ initial, storage }) {
+const VIEW_TABS = ['geral', 'vendas', 'config'];
+
+export default function App({ initial, storage, role = 'admin' }) {
+  const readOnly = role === 'viewer';
+  const tabs = readOnly ? TABS.filter(([k]) => VIEW_TABS.includes(k)) : TABS;
   const [data, setData] = useState(initial);
   const dataRef = useRef(initial);
   const [tab, setTab] = useState('geral');
@@ -53,7 +57,7 @@ export default function App({ initial, storage }) {
   useEffect(() => {
     const read = () => {
       const h = window.location.hash.slice(1);
-      if (TABS.some(([k]) => k === h)) setTab(h);
+      if (tabs.some(([k]) => k === h)) setTab(h);
     };
     read();
     window.addEventListener('hashchange', read); // toque na notificação abre a aba certa
@@ -93,6 +97,10 @@ export default function App({ initial, storage }) {
 
   /** Aplica a mudança na tela na hora e salva no banco; desfaz se falhar. */
   const commit = useCallback(async (mutate, msg) => {
+    if (readOnly) {
+      setToast('Este acesso é só para visualizar.');
+      return false;
+    }
     const prev = dataRef.current;
     const next = structuredClone(prev);
     mutate(next);
@@ -129,7 +137,7 @@ export default function App({ initial, storage }) {
     } finally {
       setSaving(false);
     }
-  }, []);
+  }, [readOnly]);
 
   /** Busca os dados mais novos do servidor (puxar para atualizar). */
   const reload = useCallback(async () => {
@@ -143,6 +151,19 @@ export default function App({ initial, storage }) {
     }
   }, []);
 
+  // números sempre frescos: ao voltar para o app, a cada minuto e quando chega um aviso de venda
+  useEffect(() => {
+    const onVis = () => { if (!document.hidden) reload(); };
+    const t = setInterval(() => { if (!document.hidden) reload(); }, 60000);
+    document.addEventListener('visibilitychange', onVis);
+    window.addEventListener('nz-refresh', reload);
+    return () => {
+      clearInterval(t);
+      document.removeEventListener('visibilitychange', onVis);
+      window.removeEventListener('nz-refresh', reload);
+    };
+  }, [reload]);
+
   const ctx = {
     data,
     commit,
@@ -154,11 +175,12 @@ export default function App({ initial, storage }) {
     hidden,
     toggleHide,
     reload,
+    readOnly,
   };
 
   const detail = detailId && data.sales.find((s) => s.id === detailId);
   const name = data.settings.name;
-  const title = TABS.find(([k]) => k === tab)[1];
+  const title = (tabs.find(([k]) => k === tab) || TABS[0])[1];
 
   return (
     <IntroContext.Provider value={play}>
@@ -180,10 +202,12 @@ export default function App({ initial, storage }) {
               <small>Painel financeiro</small>
             </div>
           </div>
-          <button className="btn primary block" style={{ marginBottom: 12 }} onClick={() => ctx.newSale()}>
-            <Icon name="plus" size={16} /> Nova venda
-          </button>
-          {TABS.map(([k, label]) => (
+          {!readOnly && (
+            <button className="btn primary block" style={{ marginBottom: 12 }} onClick={() => ctx.newSale()}>
+              <Icon name="plus" size={16} /> Nova venda
+            </button>
+          )}
+          {tabs.map(([k, label]) => (
             <button key={k} className={`nav-btn${tab === k ? ' on' : ''}`} onClick={() => go(k)}>
               <Icon name={k} /> {label}
             </button>
@@ -202,9 +226,11 @@ export default function App({ initial, storage }) {
             <div>
               <h1>{title}</h1>
             </div>
-            <button className="btn primary new-sale" onClick={() => ctx.newSale()}>
-              <Icon name="plus" size={16} /> Nova venda
-            </button>
+            {readOnly ? <span className="chip">👀 Só visualizar</span> : (
+              <button className="btn primary new-sale" onClick={() => ctx.newSale()}>
+                <Icon name="plus" size={16} /> Nova venda
+              </button>
+            )}
           </div>
           <div key={tab} className="tab-view">
           {tab === 'geral' && <Overview {...ctx} />}
@@ -216,19 +242,21 @@ export default function App({ initial, storage }) {
         </main>
       </div>
 
-      <nav className="tabbar">
-        {TABS.map(([k, , short]) => (
+      <nav className="tabbar" style={{ gridTemplateColumns: `repeat(${tabs.length}, 1fr)` }}>
+        {tabs.map(([k, , short]) => (
           <button key={k} className={tab === k ? 'on' : ''} onClick={() => go(k)}>
             <Icon name={k} size={20} />
             {short}
           </button>
         ))}
       </nav>
-      <button className="fab" aria-label="Nova venda" onClick={() => ctx.newSale()}>
-        <Icon name="plus" size={24} />
-      </button>
+      {!readOnly && (
+        <button className="fab" aria-label="Nova venda" onClick={() => ctx.newSale()}>
+          <Icon name="plus" size={24} />
+        </button>
+      )}
 
-      {form && <SaleForm {...ctx} preset={form} onClose={() => setForm(null)} />}
+      {form && !readOnly && <SaleForm {...ctx} preset={form} onClose={() => setForm(null)} />}
       {detail && <SaleDetail {...ctx} sale={detail} onClose={() => setDetailId(null)} />}
       {toast && <div className="toast" role="status">{toast}</div>}
       {locked && <LockScreen name={name} onUnlock={unlock} />}

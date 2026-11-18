@@ -26,6 +26,7 @@ export async function startNativePush({ onMessage, ask = true } = {}) {
     Push.addListener('pushNotificationReceived', (n) => {
       playSaleSound(n?.data?.sound); // com o app aberto o Android não mostra o aviso, então o som toca aqui
       window.__nzOnPush?.(n);
+      window.dispatchEvent(new Event('nz-refresh'));
     });
     Push.addListener('pushNotificationActionPerformed', ({ notification }) => {
       const url = notification?.data?.url;

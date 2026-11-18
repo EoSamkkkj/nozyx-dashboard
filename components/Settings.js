@@ -1,6 +1,6 @@
 'use client';
 
-import { useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { money, moneyInput, normalize, parseMoney, paymentsCsv, salesCsv, todaySP } from '@/lib/model';
 import { Field, Icon } from './ui';
 import AppSetup from './AppSetup';
@@ -15,7 +15,7 @@ function download(name, text, type) {
   setTimeout(() => URL.revokeObjectURL(url), 1000);
 }
 
-export default function Settings({ data, commit, notify, storage }) {
+export default function Settings({ data, commit, notify, storage, readOnly }) {
   const s = data.settings;
   const [f, setF] = useState({ name: s.name, accent: s.accent, goal: s.monthlyGoal ? moneyInput(s.monthlyGoal) : '', daily: s.dailyGoal ? moneyInput(s.dailyGoal) : '' });
   const [error, setError] = useState('');
@@ -51,10 +51,24 @@ export default function Settings({ data, commit, notify, storage }) {
     }, 'Backup restaurado.');
   }
 
+  if (readOnly) {
+    return (
+      <div className="stack" style={{ gap: 14, maxWidth: 760 }}>
+        <div className="card stack">
+          <h2>Acesso só para visualizar 👀</h2>
+          <p className="muted" style={{ fontSize: 14 }}>Você acompanha as vendas e recebe os avisos, mas não pode cadastrar nem mudar nada. Os números se atualizam sozinhos (ou puxe a tela para baixo).</p>
+        </div>
+        <AppSetup notify={notify} />
+        <Security notify={notify} />
+      </div>
+    );
+  }
+
   return (
     <div className="stack" style={{ gap: 14, maxWidth: 760 }}>
       <AppSetup notify={notify} />
       <Security notify={notify} />
+      <ViewerAccess notify={notify} />
       <form className="card stack" onSubmit={save}>
         <h2>Painel</h2>
         <div className="grid2">
@@ -106,5 +120,55 @@ export default function Settings({ data, commit, notify, storage }) {
         )}
       </div>
     </div>
+  );
+}
+
+/** O dono cria uma senha "só visualizar" para outra pessoa acompanhar as vendas. */
+function ViewerAccess({ notify }) {
+  const [info, setInfo] = useState(null);
+  const [pass, setPass] = useState('');
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState('');
+  const load = () => fetch('/api/viewer').then((r) => r.json()).then(setInfo).catch(() => {});
+  useEffect(() => { load(); }, []);
+
+  async function save(e) {
+    e.preventDefault();
+    setBusy(true);
+    const r = await fetch('/api/viewer', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ senha: pass }) });
+    const j = await r.json().catch(() => ({}));
+    setBusy(false);
+    if (!r.ok) return setError(j.error || 'Não deu para salvar.');
+    setError('');
+    setPass('');
+    notify(info?.active ? 'Senha trocada. Quem usava a antiga precisa entrar de novo.' : 'Acesso criado. Passe a senha para quem vai acompanhar.');
+    load();
+  }
+
+  async function remove() {
+    if (!confirm('Remover o acesso só visualizar? Quem estiver usando sai na hora.')) return;
+    await fetch('/api/viewer', { method: 'DELETE' });
+    notify('Acesso removido.');
+    load();
+  }
+
+  return (
+    <form className="card stack" onSubmit={save}>
+      <div className="spread">
+        <h2>Acesso só visualizar</h2>
+        {info?.active && <span className="chip ok">Ativo</span>}
+      </div>
+      <p className="muted" style={{ fontSize: 14 }}>
+        Uma segunda senha para outra pessoa acompanhar as vendas pelo app: ela vê o painel e as vendas e recebe as notificações, mas não pode cadastrar, editar nem apagar nada.
+      </p>
+      <Field label={info?.active ? 'Nova senha (troca a atual)' : 'Senha de visualização'} hint="Pelo menos 6 caracteres, diferente da sua senha.">
+        <input className="secret" autoComplete="off" value={pass} onChange={(e) => setPass(e.target.value)} />
+      </Field>
+      {error && <p className="alert">{error}</p>}
+      <div className="row">
+        <button className="btn primary" disabled={busy || pass.length < 6}>{busy ? 'Salvando…' : info?.active ? 'Trocar senha' : 'Criar acesso'}</button>
+        {info?.active && <button type="button" className="btn ghost" onClick={remove}>Remover acesso</button>}
+      </div>
+    </form>
   );
 }

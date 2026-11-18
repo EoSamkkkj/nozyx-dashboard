@@ -21,7 +21,7 @@ export default async function Login({ searchParams }) {
         <div className="login-logo"><Logo size={40} /></div>
         <span className="eyebrow">Nozyx · Área do administrador</span>
         <h1>Painel financeiro</h1>
-        <p className="muted">Entre com sua senha de administrador para ver vendas, recebimentos e metas.</p>
+        <p className="muted">Entre com a sua senha para ver vendas, recebimentos e metas.</p>
         {msg && <p className="alert">{msg}</p>}
         <LoginForm disabled={semSenha || erro === 'bloqueio'} />
         <p className="login-foot"><span className="dot-ok" /> Conexão protegida · acesso só do administrador</p>

@@ -5,7 +5,7 @@ import App from '@/components/App';
 export const dynamic = 'force-dynamic';
 
 export default async function Home() {
-  await requireAuth();
+  const role = await requireAuth();
   const data = await loadData(USER);
-  return <App initial={data} storage={hasDatabase ? 'banco' : 'memoria'} />;
+  return <App role={role} initial={data} storage={hasDatabase ? 'banco' : 'memoria'} />;
 }

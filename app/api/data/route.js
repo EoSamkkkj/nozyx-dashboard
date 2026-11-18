@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { isAuthed, USER } from '@/lib/auth';
+import { getRole, isAuthed, USER } from '@/lib/auth';
 import { loadData, saveData } from '@/lib/db';
 import { changes, notify } from '@/lib/push';
 
@@ -13,7 +13,9 @@ export async function GET() {
 }
 
 export async function PUT(req) {
-  if (!(await isAuthed())) return denied();
+  const role = await getRole();
+  if (!role) return denied();
+  if (role !== 'admin') return NextResponse.json({ error: 'Este acesso é só para visualizar.' }, { status: 403 });
   let body;
   try {
     body = await req.json();

@@ -6,7 +6,7 @@ import { Field, FinChip, Icon, Modal, MoneyInput, StatusChip } from './ui';
 import Receipt from './Receipt';
 import { whatsLink } from '@/lib/whats';
 
-export default function SaleDetail({ data, sale, commit, onClose, editSale, notify }) {
+export default function SaleDetail({ data, sale, commit, onClose, editSale, notify, readOnly }) {
   const [receipt, setReceipt] = useState(false);
   const c = computeSale(sale);
   const client = data.clients.find((x) => x.id === sale.clientId);
@@ -67,11 +67,11 @@ export default function SaleDetail({ data, sale, commit, onClose, editSale, noti
           <span className="chip">{sale.qty} vídeo{sale.qty > 1 ? 's' : ''}{sale.mode === 'package' ? ' · pacote' : ''}</span>
         </div>
 
-        <div className="row">
+        {!readOnly && <div className="row">
           <button className="btn sm" onClick={() => setReceipt(true)}><Icon name="baixar" size={15} /> Recibo em imagem</button>
           {charge && <a className="btn sm whats" href={charge} target="_blank" rel="noreferrer">Cobrar no WhatsApp</a>}
           {!c.cancelled && c.balance > 0 && !charge && <span className="faint" style={{ fontSize: 12.5 }}>Cadastre o WhatsApp do cliente para cobrar com um toque.</span>}
-        </div>
+        </div>}
 
         {c.review && (
           <p className="alert warn">Venda cancelada com {money(c.received)} recebidos. Revise: devolva o valor (apague o recebimento) ou reative a venda.</p>
@@ -105,12 +105,12 @@ export default function SaleDetail({ data, sale, commit, onClose, editSale, noti
                 <b>{money(pay.amount)}</b> <span className="muted">· {pay.method}</span>
                 <div className="cell-sub">{brDate(pay.date)}{pay.note && ` · ${pay.note}`}</div>
               </div>
-              <button className="btn sm ghost" onClick={() => removePayment(pay)}>Apagar</button>
+              {!readOnly && <button className="btn sm ghost" onClick={() => removePayment(pay)}>Apagar</button>}
             </div>
           ))}
         </div>
 
-        {!c.cancelled && c.balance > 0 && (
+        {!readOnly && !c.cancelled && c.balance > 0 && (
           <form className="card flat stack" style={{ padding: 16 }} onSubmit={addPayment}>
             <div className="spread">
               <h3>Registrar recebimento</h3>
@@ -129,7 +129,7 @@ export default function SaleDetail({ data, sale, commit, onClose, editSale, noti
           </form>
         )}
 
-        <div className="spread" style={{ borderTop: '1px solid var(--line)', paddingTop: 16 }}>
+        {!readOnly && <div className="spread" style={{ borderTop: '1px solid var(--line)', paddingTop: 16 }}>
           <label className="field" style={{ minWidth: 200 }}>
             <span>Status do trabalho</span>
             <select value={sale.status} onChange={changeStatus}>
@@ -140,7 +140,7 @@ export default function SaleDetail({ data, sale, commit, onClose, editSale, noti
             <button className="btn danger" onClick={removeSale}>Excluir venda</button>
             <button className="btn" onClick={() => { onClose(); editSale(sale); }}>Editar venda</button>
           </div>
-        </div>
+        </div>}
       </div>
       {receipt && <Receipt sale={sale} client={client} name={data.settings.name} notify={notify} onClose={() => setReceipt(false)} />}
     </Modal>

@@ -6,7 +6,7 @@ import { FinChip, Icon, StatusChip } from './ui';
 
 const norm = (t) => t.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase();
 
-export default function Sales({ data, newSale, openSale }) {
+export default function Sales({ data, newSale, openSale, readOnly }) {
   const [q, setQ] = useState('');
   const [from, setFrom] = useState('');
   const [to, setTo] = useState('');
@@ -39,7 +39,7 @@ export default function Sales({ data, newSale, openSale }) {
         <div className="big"><Icon name="vendas" size={26} /></div>
         <h2>Nenhuma venda cadastrada</h2>
         <p>Comece lançando uma venda. Pode ser uma venda antiga, com a data em que ela aconteceu.</p>
-        <button className="btn primary" onClick={() => newSale()}><Icon name="plus" size={16} /> Nova venda</button>
+        {!readOnly && <button className="btn primary" onClick={() => newSale()}><Icon name="plus" size={16} /> Nova venda</button>}
       </div>
     );
   }
