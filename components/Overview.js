@@ -1,12 +1,12 @@
 'use client';
 
 import { useMemo, useState } from 'react';
-import { PERIODS, brDate, goalProgress, monthRace, money, periodRange, series, summary, todaySP } from '@/lib/model';
+import { PERIODS, addDays, brDate, diffDays, goalProgress, monthRace, money, periodRange, series, summary, todaySP } from '@/lib/model';
 import { EvolutionChart, MonthRaceChart, PlanBars } from './Charts';
 import { Icon } from './ui';
 
 export default function Overview({ data, newSale, go, openSale }) {
-  const [period, setPeriod] = useState('30');
+  const [period, setPeriod] = useState('hoje');
   const today = todaySP();
   const [custom, setCustom] = useState({ from: today.slice(0, 8) + '01', to: today });
   const [a, b] = periodRange(period, data, today, custom);
@@ -30,28 +30,13 @@ export default function Overview({ data, newSale, go, openSale }) {
   }
 
   const rangeText = a === b ? brDate(a) : `${brDate(a)} a ${brDate(b)}`;
-  const month = summary(data, `${today.slice(0, 7)}-01`, today);
 
   return (
     <>
-      <Hero data={data} race={race} goal={goal} month={month} openTotal={s.openTotal} go={go} />
+      <Hero data={data} period={period} setPeriod={setPeriod} custom={custom} setCustom={setCustom} a={a} b={b} s={s} race={race} goal={goal} go={go} />
 
       <div className="section-head">
         <h2>Desempenho</h2>
-      </div>
-      <div className="filters">
-        <div className="seg">
-          {PERIODS.map(([k, label]) => (
-            <button key={k} className={period === k ? 'on' : ''} onClick={() => setPeriod(k)}>{label}</button>
-          ))}
-        </div>
-        {period === 'custom' && (
-          <div className="row">
-            <input type="date" value={custom.from} onChange={(e) => setCustom((c) => ({ ...c, from: e.target.value }))} style={{ width: 'auto' }} aria-label="De" />
-            <span className="faint">até</span>
-            <input type="date" value={custom.to} onChange={(e) => setCustom((c) => ({ ...c, to: e.target.value }))} style={{ width: 'auto' }} aria-label="Até" />
-          </div>
-        )}
         <span className="faint">{rangeText}</span>
       </div>
 
@@ -132,13 +117,29 @@ function greeting() {
   return h < 5 ? 'Boa noite' : h < 12 ? 'Bom dia' : h < 18 ? 'Boa tarde' : 'Boa noite';
 }
 
-function Hero({ data, race, goal, month, openTotal, go }) {
-  const now = race.current[race.current.length - 1] || 0;
-  const before = race.previous[Math.min(race.today, race.previous.length) - 1] || 0;
-  const diff = now - before;
-  const pct = before ? Math.round((diff / before) * 100) : null;
+const LABEL = { hoje: 'Vendido hoje', mes: '', 7: 'Vendido nos últimos 7 dias', 30: 'Vendido nos últimos 30 dias', 60: 'Vendido nos últimos 60 dias', tudo: 'Vendido em todo o período' };
+
+function Hero({ data, period, setPeriod, custom, setCustom, a, b, s, race, goal, go }) {
   const date = new Intl.DateTimeFormat('pt-BR', { weekday: 'long', day: 'numeric', month: 'long', timeZone: 'America/Sao_Paulo' }).format(new Date());
   const monthName = new Intl.DateTimeFormat('pt-BR', { month: 'long', timeZone: 'America/Sao_Paulo' }).format(new Date());
+  const label = period === 'mes' ? `Vendido em ${monthName}` : period === 'custom' ? (a === b ? `Vendido em ${brDate(a)}` : `Vendido de ${brDate(a)} a ${brDate(b)}`) : LABEL[period];
+
+  // comparação com o período anterior do mesmo tamanho
+  let before = 0, vs = '';
+  if (period === 'mes') {
+    before = race.previous[Math.min(race.today, race.previous.length) - 1] || 0;
+    vs = `vs. mesmo dia de ${race.prevLabel}`;
+  } else if (period !== 'tudo') {
+    const span = diffDays(a, b) + 1;
+    before = summary(data, addDays(a, -span), addDays(a, -1)).sold;
+    vs = period === 'hoje' ? 'vs. ontem' : span === 1 ? 'vs. dia anterior' : `vs. ${span} dias anteriores`;
+  }
+  const diff = s.sold - before;
+  const pct = before ? Math.round((diff / before) * 100) : null;
+  const spark = useMemo(() => {
+    const [x, y] = period === 'hoje' ? [addDays(b, -6), b] : [a, b];
+    return series(data, x, y).buckets.map((k) => k.sold);
+  }, [data, a, b, period]);
 
   return (
     <section className="hero-panel">
@@ -150,27 +151,42 @@ function Hero({ data, race, goal, month, openTotal, go }) {
         <span className="live"><i /> Ao vivo</span>
       </div>
 
+      <div className="hero-periods" role="tablist" aria-label="Período">
+        {PERIODS.map(([k, l]) => (
+          <button key={k} role="tab" aria-selected={period === k} className={period === k ? 'on' : ''} onClick={() => setPeriod(k)}>{l}</button>
+        ))}
+      </div>
+      {period === 'custom' && (
+        <div className="hero-dates">
+          <input type="date" value={custom.from} onChange={(e) => setCustom((c) => ({ ...c, from: e.target.value }))} aria-label="De" />
+          <span>até</span>
+          <input type="date" value={custom.to} onChange={(e) => setCustom((c) => ({ ...c, to: e.target.value }))} aria-label="Até" />
+        </div>
+      )}
+
       <div className="hero-main">
         <div className="grow">
-          <p className="hero-label">Vendido em {monthName}</p>
-          <p className="hero-value">{money(now)}</p>
+          <p className="hero-label">{label}</p>
+          <p className="hero-value" key={period}>{money(s.sold)}</p>
           {before > 0 ? (
             <span className={`trend ${diff >= 0 ? 'up' : 'down'}`}>
               {diff >= 0 ? '▲' : '▼'} {pct !== null ? `${Math.abs(pct)}%` : money(Math.abs(diff))}
-              <span> vs. mesmo dia de {race.prevLabel}</span>
+              <span> {vs}</span>
             </span>
           ) : (
-            <span className="trend up">{month.count} venda{month.count === 1 ? '' : 's'} este mês</span>
+            <span className="trend up">
+              {s.count ? `${s.count} venda${s.count === 1 ? '' : 's'}` : period === 'hoje' ? 'Nenhuma venda hoje ainda' : 'Nenhuma venda no período'}
+            </span>
           )}
-          <Spark values={race.current} days={race.days} />
+          <Spark values={spark} days={spark.length} />
         </div>
         <GoalRing goal={goal} go={go} />
       </div>
 
       <div className="hero-stats">
-        <div><span>Recebido</span><b>{money(month.received)}</b></div>
-        <div><span>A receber</span><b>{money(openTotal)}</b></div>
-        <div><span>Vendas</span><b>{month.count}</b></div>
+        <div><span>Recebido</span><b>{money(s.received)}</b></div>
+        <div><span>A receber</span><b>{money(s.openTotal)}</b></div>
+        <div><span>Vendas</span><b>{s.count}</b></div>
       </div>
     </section>
   );
