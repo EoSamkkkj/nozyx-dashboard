@@ -14,6 +14,7 @@ import SaleDetail from './SaleDetail';
 import { useAppShell } from './AppSetup';
 import LockScreen, { useLock } from './Lock';
 import PullRefresh from './PullRefresh';
+import { IntroContext } from './Intro';
 
 const TABS = [
   ['geral', 'Visão geral', 'Visão geral'],
@@ -34,6 +35,15 @@ export default function App({ initial, storage }) {
   const [hidden, setHidden] = useState(false);
   useAppShell();
   const [locked, unlock] = useLock();
+  const [ready, setReady] = useState(false);
+  const [intro, setIntro] = useState(true);
+  useEffect(() => setReady(true), []);
+  const play = ready && !locked;
+  useEffect(() => {
+    if (!play) return;
+    const t = setTimeout(() => setIntro(false), 2200); // animação de entrada só na abertura
+    return () => clearTimeout(t);
+  }, [play]);
 
   useEffect(() => {
     const read = () => {
@@ -146,7 +156,8 @@ export default function App({ initial, storage }) {
   const title = TABS.find(([k]) => k === tab)[1];
 
   return (
-    <div className={hidden ? 'hide-values' : ''} style={{ '--accent': data.settings.accent }}>
+    <IntroContext.Provider value={play}>
+    <div className={`${hidden ? 'hide-values' : ''}${play && intro ? ' intro' : ''}${play ? '' : ' pre-intro'}`} style={{ '--accent': data.settings.accent }}>
       <PullRefresh onRefresh={reload} />
       <div className="mobile-bar">
         <div className="brand" style={{ padding: 0 }}>
@@ -215,5 +226,6 @@ export default function App({ initial, storage }) {
       {toast && <div className="toast" role="status">{toast}</div>}
       {locked && <LockScreen name={name} onUnlock={unlock} />}
     </div>
+    </IntroContext.Provider>
   );
 }

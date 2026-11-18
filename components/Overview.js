@@ -4,6 +4,7 @@ import { useMemo, useState } from 'react';
 import { PERIODS, addDays, brDate, byOrigin, clientRanking, streak, diffDays, forecast, records, goalProgress, monthRace, money, periodRange, series, summary, todaySP } from '@/lib/model';
 import { EvolutionChart, MonthRaceChart, PlanBars } from './Charts';
 import { Icon } from './ui';
+import { CountUp } from './Intro';
 import { fraseDoDia } from '@/lib/frases';
 import { whatsLink } from '@/lib/whats';
 
@@ -57,12 +58,12 @@ export default function Overview({ data, newSale, go, openSale, hidden, toggleHi
       )}
 
       <div className="kpis">
-        <Kpi icon="trend" tone="accent" label="Total vendido" value={money(s.sold)} note="pela data da venda" />
-        <Kpi icon="check" tone="ok" label="Total recebido" value={money(s.received)} note="pela data de cada recebimento" />
-        <Kpi icon="relogio" tone="warn" label="Pendente do período" value={money(s.pending)} note="quanto falta receber delas" />
-        <Kpi icon="vendas" tone="accent" label="Vendas" value={s.count} />
-        <Kpi icon="play" tone="violet" label="Vídeos vendidos" value={s.videos} />
-        <Kpi icon="ticket" tone="ok" label="Ticket médio" value={money(s.ticket)} note="por venda" />
+        <Kpi icon="trend" tone="accent" label="Total vendido" value={<CountUp value={s.sold} delay={250} />} note="pela data da venda" />
+        <Kpi icon="check" tone="ok" label="Total recebido" value={<CountUp value={s.received} delay={300} />} note="pela data de cada recebimento" />
+        <Kpi icon="relogio" tone="warn" label="Pendente do período" value={<CountUp value={s.pending} delay={350} />} note="quanto falta receber delas" />
+        <Kpi icon="vendas" tone="accent" label="Vendas" value={<CountUp value={s.count} format={String} delay={400} />} />
+        <Kpi icon="play" tone="violet" label="Vídeos vendidos" value={<CountUp value={s.videos} format={String} delay={450} />} />
+        <Kpi icon="ticket" tone="ok" label="Ticket médio" value={<CountUp value={s.ticket} delay={500} />} note="por venda" />
       </div>
 
 
@@ -199,7 +200,7 @@ function Hero({ st, rec, fc, hidden, toggleHide, data, period, setPeriod, custom
             {period === 'hoje' && rec.bestDay > 0 && rec.todaySold > rec.bestDay && <span className="record">🏆 Recorde do dia</span>}
             {period === 'mes' && rec.bestMonth > 0 && rec.monthSold > rec.bestMonth && <span className="record">🏆 Melhor mês</span>}
           </p>
-          <p className="hero-value" key={period}>{money(s.sold)}</p>
+          <p className="hero-value"><CountUp value={s.sold} delay={150} /></p>
           {before > 0 ? (
             <span className={`trend ${diff >= 0 ? 'up' : 'down'}`}>
               {diff >= 0 ? '▲' : '▼'} {pct !== null ? `${Math.abs(pct)}%` : money(Math.abs(diff))}
@@ -220,9 +221,9 @@ function Hero({ st, rec, fc, hidden, toggleHide, data, period, setPeriod, custom
       </div>
 
       <div className="hero-stats">
-        <div><span>Recebido</span><b>{money(s.received)}</b></div>
-        <div><span>A receber</span><b>{money(s.openTotal)}</b></div>
-        <div><span>Vendas</span><b>{s.count}</b></div>
+        <div><span>Recebido</span><b><CountUp value={s.received} delay={350} /></b></div>
+        <div><span>A receber</span><b><CountUp value={s.openTotal} delay={400} /></b></div>
+        <div><span>Vendas</span><b><CountUp value={s.count} format={String} delay={450} /></b></div>
       </div>
     </section>
   );
