@@ -24,7 +24,7 @@ export async function startNativePush({ onMessage, ask = true } = {}) {
     });
     Push.addListener('registrationError', (e) => console.error('[push nativo]', e?.error));
     Push.addListener('pushNotificationReceived', (n) => {
-      playSaleSound(); // com o app aberto o Android não mostra o aviso, então o som toca aqui
+      playSaleSound(n?.data?.sound); // com o app aberto o Android não mostra o aviso, então o som toca aqui
       window.__nzOnPush?.(n);
     });
     Push.addListener('pushNotificationActionPerformed', ({ notification }) => {
@@ -68,11 +68,12 @@ export async function verifyBiometry() {
   }
 }
 
-let saleAudio;
-export function playSaleSound() {
+const audios = {};
+export function playSaleSound(kind = 'venda') {
   try {
-    saleAudio ||= new Audio('/venda.mp3');
-    saleAudio.currentTime = 0;
-    saleAudio.play().catch(() => {});
+    const k = kind === 'recorde' ? 'recorde' : 'venda';
+    audios[k] ||= new Audio(`/${k}.mp3`);
+    audios[k].currentTime = 0;
+    audios[k].play().catch(() => {});
   } catch {}
 }

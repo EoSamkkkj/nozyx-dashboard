@@ -356,3 +356,33 @@ input.secret:not(:placeholder-shown) { letter-spacing: .12em; }
 .ptr .spin { animation: ptr-spin .7s linear infinite; }
 .ptr-dot { position: absolute; bottom: 5px; width: 4px; height: 4px; border-radius: 50%; background: currentColor; }
 @keyframes ptr-spin { to { transform: rotate(360deg); } }
+
+/* ---------- frase do dia ---------- */
+.frase { margin-bottom: 22px; position: relative; overflow: hidden; border-color: rgba(108,184,255,.22); background: linear-gradient(135deg, rgba(74,152,255,.10), rgba(74,152,255,.02)) , var(--card); }
+.frase::before { content: '“'; position: absolute; right: 14px; top: -18px; font-size: 120px; font-weight: 700; color: rgba(108,184,255,.10); line-height: 1; pointer-events: none; }
+.frase-tag { font-size: 11.5px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: #6CB8FF; }
+.frase blockquote { margin: 8px 0 4px; font-size: 17px; font-weight: 600; line-height: 1.4; letter-spacing: -0.01em; }
+.frase-fonte { font-size: 13px; color: var(--muted); }
+.frase-por { margin-top: 10px; padding-top: 10px; border-top: 1px solid var(--line-2); font-size: 13.5px; color: var(--muted); line-height: 1.5; }
+.frase-por b { color: var(--text); }
+
+/* ---------- recorde e previsão ---------- */
+.record { display: inline-block; margin-left: 8px; padding: 2px 8px; border-radius: 999px; font-size: 11.5px; font-weight: 700; color: #1F2430; background: linear-gradient(135deg, #FFE08A, #FFC24A); animation: pop .4s ease; }
+.hero-forecast { margin-top: 10px; font-size: 13px; color: rgba(221,238,255,.82); }
+.hero-forecast b { color: #fff; }
+.forecast { display: inline-flex; align-items: center; gap: 6px; margin-top: 8px; font-size: 13px; color: var(--muted); padding: 5px 10px; border-radius: 999px; background: rgba(74,152,255,.1); }
+.forecast b { color: var(--text); }
+
+/* ---------- ranking ---------- */
+.rank { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; }
+.rank li { display: flex; align-items: center; gap: 12px; padding: 10px 0; }
+.rank li + li { border-top: 1px solid var(--line-2); }
+.rank .grow { display: flex; flex-direction: column; min-width: 0; }
+.rank .grow b { font-size: 14px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.rank .grow .faint { font-size: 12px; }
+.rank .v { font-weight: 700; white-space: nowrap; }
+.rank-pos { flex: none; display: grid; place-items: center; width: 26px; height: 26px; border-radius: 50%; font-size: 12.5px; font-weight: 700; background: var(--line-2); color: var(--muted); }
+.rank-pos.p1 { background: linear-gradient(135deg, #FFE08A, #FFC24A); color: #1F2430; }
+.rank-pos.p2 { background: linear-gradient(135deg, #E6EEF7, #B9C6D6); color: #1F2430; }
+.rank-pos.p3 { background: linear-gradient(135deg, #F2C29B, #C98552); color: #1F2430; }
+.hide-values .hero-forecast b, .hide-values .forecast b { filter: blur(8px); }

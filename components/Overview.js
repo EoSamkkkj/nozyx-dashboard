@@ -1,9 +1,10 @@
 'use client';
 
 import { useMemo, useState } from 'react';
-import { PERIODS, addDays, brDate, diffDays, goalProgress, monthRace, money, periodRange, series, summary, todaySP } from '@/lib/model';
+import { PERIODS, addDays, brDate, clientRanking, diffDays, forecast, records, goalProgress, monthRace, money, periodRange, series, summary, todaySP } from '@/lib/model';
 import { EvolutionChart, MonthRaceChart, PlanBars } from './Charts';
 import { Icon } from './ui';
+import { fraseDoDia } from '@/lib/frases';
 
 export default function Overview({ data, newSale, go, openSale, hidden, toggleHide }) {
   const [period, setPeriod] = useState('hoje');
@@ -14,6 +15,9 @@ export default function Overview({ data, newSale, go, openSale, hidden, toggleHi
   const chart = useMemo(() => series(data, a, b), [data, a, b]);
   const goal = goalProgress(data, today);
   const race = useMemo(() => monthRace(data, today), [data, today]);
+  const rec = useMemo(() => records(data, today), [data, today]);
+  const fc = useMemo(() => forecast(data, today), [data, today]);
+  const rank = useMemo(() => clientRanking(data, today), [data, today]);
 
   if (!data.sales.length) {
     return (
@@ -33,7 +37,9 @@ export default function Overview({ data, newSale, go, openSale, hidden, toggleHi
 
   return (
     <>
-      <Hero hidden={hidden} toggleHide={toggleHide} data={data} period={period} setPeriod={setPeriod} custom={custom} setCustom={setCustom} a={a} b={b} s={s} race={race} goal={goal} go={go} />
+      <Hero rec={rec} fc={fc} hidden={hidden} toggleHide={toggleHide} data={data} period={period} setPeriod={setPeriod} custom={custom} setCustom={setCustom} a={a} b={b} s={s} race={race} goal={goal} go={go} />
+
+      <Frase today={today} />
 
       <div className="section-head">
         <h2>Desempenho</h2>
@@ -57,7 +63,7 @@ export default function Overview({ data, newSale, go, openSale, hidden, toggleHi
       </div>
 
 
-      <MonthCard race={race} />
+      <MonthCard race={race} fc={fc} />
 
       <div className="card" style={{ marginTop: 14 }}>
         <div className="card-title">
@@ -80,12 +86,13 @@ export default function Overview({ data, newSale, go, openSale, hidden, toggleHi
           {s.byPlan.length ? <PlanBars rows={s.byPlan} field="count" format={(v) => v} alt /> : <p className="faint">Sem vendas no período.</p>}
         </div>
       </div>
+      <Ranking rank={rank} openSale={openSale} data={data} />
       <p className="faint foot-note">Valores vendidos e recebidos. Custos não entram nesta versão, então nada aqui é lucro.</p>
     </>
   );
 }
 
-function MonthCard({ race }) {
+function MonthCard({ race, fc }) {
   const now = race.current[race.current.length - 1] || 0;
   const before = race.previous[Math.min(race.today, race.previous.length) - 1] || 0;
   const diff = now - before;
@@ -100,6 +107,9 @@ function MonthCard({ race }) {
               <> · <span style={{ color: diff >= 0 ? 'var(--ok)' : 'var(--warn)' }}>{diff >= 0 ? '+' : '−'}{money(Math.abs(diff))}</span> em relação ao mesmo dia de {race.prevLabel}</>
             )}
           </p>
+          {fc.value > 0 && fc.daysLeft > 0 && (
+            <p className="forecast"><Icon name="trend" size={14} /> No ritmo atual, você fecha {fc.label} com <b>{money(fc.value)}</b></p>
+          )}
         </div>
         <div className="legend">
           <span><i style={{ background: 'var(--accent)' }} />{race.label}</span>
@@ -119,7 +129,7 @@ function greeting() {
 
 const LABEL = { hoje: 'Vendido hoje', mes: '', 7: 'Vendido nos últimos 7 dias', 30: 'Vendido nos últimos 30 dias', 60: 'Vendido nos últimos 60 dias', tudo: 'Vendido em todo o período' };
 
-function Hero({ hidden, toggleHide, data, period, setPeriod, custom, setCustom, a, b, s, race, goal, go }) {
+function Hero({ rec, fc, hidden, toggleHide, data, period, setPeriod, custom, setCustom, a, b, s, race, goal, go }) {
   const date = new Intl.DateTimeFormat('pt-BR', { weekday: 'long', day: 'numeric', month: 'long', timeZone: 'America/Sao_Paulo' }).format(new Date());
   const monthName = new Intl.DateTimeFormat('pt-BR', { month: 'long', timeZone: 'America/Sao_Paulo' }).format(new Date());
   const label = period === 'mes' ? `Vendido em ${monthName}` : period === 'custom' ? (a === b ? `Vendido em ${brDate(a)}` : `Vendido de ${brDate(a)} a ${brDate(b)}`) : LABEL[period];
@@ -171,7 +181,11 @@ function Hero({ hidden, toggleHide, data, period, setPeriod, custom, setCustom, 
 
       <div className="hero-main">
         <div className="grow">
-          <p className="hero-label">{label}</p>
+          <p className="hero-label">
+            {label}
+            {period === 'hoje' && rec.bestDay > 0 && rec.todaySold > rec.bestDay && <span className="record">🏆 Recorde do dia</span>}
+            {period === 'mes' && rec.bestMonth > 0 && rec.monthSold > rec.bestMonth && <span className="record">🏆 Melhor mês</span>}
+          </p>
           <p className="hero-value" key={period}>{money(s.sold)}</p>
           {before > 0 ? (
             <span className={`trend ${diff >= 0 ? 'up' : 'down'}`}>
@@ -182,6 +196,9 @@ function Hero({ hidden, toggleHide, data, period, setPeriod, custom, setCustom, 
             <span className="trend up">
               {s.count ? `${s.count} venda${s.count === 1 ? '' : 's'}` : period === 'hoje' ? 'Nenhuma venda hoje ainda' : 'Nenhuma venda no período'}
             </span>
+          )}
+          {period === 'mes' && fc.value > 0 && fc.daysLeft > 0 && (
+            <p className="hero-forecast">No ritmo atual, você fecha {fc.label} com <b>{money(fc.value)}</b></p>
           )}
           <Spark values={spark} days={spark.length} />
         </div>
@@ -262,3 +279,61 @@ function Kpi({ label, value, note, icon, tone = 'accent' }) {
   );
 }
 
+
+function Frase({ today }) {
+  const f = fraseDoDia(today);
+  return (
+    <section className="card frase">
+      <p className="frase-tag">Frase do dia</p>
+      <blockquote>“{f.t}”</blockquote>
+      <p className="frase-fonte">— {f.f}</p>
+      <p className="frase-por"><b>Por que hoje:</b> {f.p}</p>
+    </section>
+  );
+}
+
+function whats(contact, name) {
+  let n = String(contact || '').replace(/\D/g, '');
+  if (n.length < 10) return null;
+  if (n.length <= 11) n = `55${n}`;
+  const msg = `Oi, ${name.split(' ')[0]}! Tudo bem? Faz um tempinho que a gente não faz um vídeo juntos. Bora criar o próximo?`;
+  return `https://wa.me/${n}?text=${encodeURIComponent(msg)}`;
+}
+
+function Ranking({ rank }) {
+  if (!rank.top.length) return null;
+  return (
+    <div className="split">
+      <div className="card">
+        <div className="card-title"><h2>Melhores clientes</h2><span className="faint">desde o início</span></div>
+        <ol className="rank">
+          {rank.top.map((r, i) => (
+            <li key={r.id}>
+              <span className={`rank-pos p${i + 1}`}>{i + 1}</span>
+              <div className="grow"><b>{r.name}</b><span className="faint">{r.count} venda{r.count === 1 ? '' : 's'}</span></div>
+              <span className="v">{money(r.total)}</span>
+            </li>
+          ))}
+        </ol>
+      </div>
+      <div className="card">
+        <div className="card-title"><h2>Sumidos</h2><span className="faint">sem comprar há +30 dias</span></div>
+        {rank.gone.length ? (
+          <ul className="rank">
+            {rank.gone.map((r) => {
+              const link = whats(r.contact, r.name);
+              return (
+                <li key={r.id}>
+                  <div className="grow"><b>{r.name}</b><span className="faint">última compra há {r.days} dias · {money(r.total)}</span></div>
+                  {link ? <a className="btn sm" href={link} target="_blank" rel="noreferrer">Chamar</a> : null}
+                </li>
+              );
+            })}
+          </ul>
+        ) : (
+          <p className="faint">Ninguém sumido. Todos os clientes compraram nos últimos 30 dias. 👏</p>
+        )}
+      </div>
+    </div>
+  );
+}
