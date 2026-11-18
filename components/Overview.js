@@ -1,10 +1,11 @@
 'use client';
 
 import { useMemo, useState } from 'react';
-import { PERIODS, addDays, brDate, clientRanking, diffDays, forecast, records, goalProgress, monthRace, money, periodRange, series, summary, todaySP } from '@/lib/model';
+import { PERIODS, addDays, brDate, byOrigin, clientRanking, streak, diffDays, forecast, records, goalProgress, monthRace, money, periodRange, series, summary, todaySP } from '@/lib/model';
 import { EvolutionChart, MonthRaceChart, PlanBars } from './Charts';
 import { Icon } from './ui';
 import { fraseDoDia } from '@/lib/frases';
+import { whatsLink } from '@/lib/whats';
 
 export default function Overview({ data, newSale, go, openSale, hidden, toggleHide }) {
   const [period, setPeriod] = useState('hoje');
@@ -18,6 +19,8 @@ export default function Overview({ data, newSale, go, openSale, hidden, toggleHi
   const rec = useMemo(() => records(data, today), [data, today]);
   const fc = useMemo(() => forecast(data, today), [data, today]);
   const rank = useMemo(() => clientRanking(data, today), [data, today]);
+  const st = useMemo(() => streak(data, today), [data, today]);
+  const origins = useMemo(() => byOrigin(data, a, b), [data, a, b]);
 
   if (!data.sales.length) {
     return (
@@ -37,7 +40,7 @@ export default function Overview({ data, newSale, go, openSale, hidden, toggleHi
 
   return (
     <>
-      <Hero rec={rec} fc={fc} hidden={hidden} toggleHide={toggleHide} data={data} period={period} setPeriod={setPeriod} custom={custom} setCustom={setCustom} a={a} b={b} s={s} race={race} goal={goal} go={go} />
+      <Hero st={st} rec={rec} fc={fc} hidden={hidden} toggleHide={toggleHide} data={data} period={period} setPeriod={setPeriod} custom={custom} setCustom={setCustom} a={a} b={b} s={s} race={race} goal={goal} go={go} />
 
       <Frase today={today} />
 
@@ -86,6 +89,13 @@ export default function Overview({ data, newSale, go, openSale, hidden, toggleHi
           {s.byPlan.length ? <PlanBars rows={s.byPlan} field="count" format={(v) => v} alt /> : <p className="faint">Sem vendas no período.</p>}
         </div>
       </div>
+      {origins.length > 0 && (origins.length > 1 || origins[0].name !== 'Não informado') && (
+        <div className="card" style={{ marginTop: 14 }}>
+          <div className="card-title"><h2>De onde vêm as vendas</h2><span className="faint">{rangeText}</span></div>
+          <PlanBars rows={origins} field="value" format={money} />
+        </div>
+      )}
+
       <Ranking rank={rank} openSale={openSale} data={data} />
       <p className="faint foot-note">Valores vendidos e recebidos. Custos não entram nesta versão, então nada aqui é lucro.</p>
     </>
@@ -129,7 +139,7 @@ function greeting() {
 
 const LABEL = { hoje: 'Vendido hoje', ontem: 'Vendido ontem', mes: '', 7: 'Vendido nos últimos 7 dias', 30: 'Vendido nos últimos 30 dias', 60: 'Vendido nos últimos 60 dias', tudo: 'Vendido em todo o período' };
 
-function Hero({ rec, fc, hidden, toggleHide, data, period, setPeriod, custom, setCustom, a, b, s, race, goal, go }) {
+function Hero({ st, rec, fc, hidden, toggleHide, data, period, setPeriod, custom, setCustom, a, b, s, race, goal, go }) {
   const date = new Intl.DateTimeFormat('pt-BR', { weekday: 'long', day: 'numeric', month: 'long', timeZone: 'America/Sao_Paulo' }).format(new Date());
   const monthName = new Intl.DateTimeFormat('pt-BR', { month: 'long', timeZone: 'America/Sao_Paulo' }).format(new Date());
   const label = period === 'mes' ? `Vendido em ${monthName}` : period === 'custom' ? (a === b ? `Vendido em ${brDate(a)}` : `Vendido de ${brDate(a)} a ${brDate(b)}`) : LABEL[period];
@@ -157,6 +167,9 @@ function Hero({ rec, fc, hidden, toggleHide, data, period, setPeriod, custom, se
         <div>
           <p className="hero-hello">{greeting()}</p>
           <p className="hero-date">{date.charAt(0).toUpperCase() + date.slice(1)}</p>
+          {st.days >= 2 && (
+            <span className={`streak${st.today ? '' : ' wait'}`}>🔥 {st.days} dias seguidos vendendo{st.today ? '' : ' · venda hoje para manter'}</span>
+          )}
         </div>
         <div className="hero-tools">
           <button className="eye-btn" onClick={toggleHide} aria-label={hidden ? 'Mostrar valores' : 'Esconder valores'} aria-pressed={hidden}>
@@ -197,6 +210,7 @@ function Hero({ rec, fc, hidden, toggleHide, data, period, setPeriod, custom, se
               {s.count ? `${s.count} venda${s.count === 1 ? '' : 's'}` : period === 'hoje' ? 'Nenhuma venda hoje ainda' : period === 'ontem' ? 'Nenhuma venda ontem' : 'Nenhuma venda no período'}
             </span>
           )}
+          {period === 'hoje' && data.settings.dailyGoal > 0 && <DayGoal sold={s.sold} goal={data.settings.dailyGoal} />}
           {period === 'mes' && fc.value > 0 && fc.daysLeft > 0 && (
             <p className="hero-forecast">No ritmo atual, você fecha {fc.label} com <b>{money(fc.value)}</b></p>
           )}
@@ -293,11 +307,7 @@ function Frase({ today }) {
 }
 
 function whats(contact, name) {
-  let n = String(contact || '').replace(/\D/g, '');
-  if (n.length < 10) return null;
-  if (n.length <= 11) n = `55${n}`;
-  const msg = `Oi, ${name.split(' ')[0]}! Tudo bem? Faz um tempinho que a gente não faz um vídeo juntos. Bora criar o próximo?`;
-  return `https://wa.me/${n}?text=${encodeURIComponent(msg)}`;
+  return whatsLink(contact, `Oi, ${name.split(' ')[0]}! Tudo bem? Faz um tempinho que a gente não faz um vídeo juntos. Bora criar o próximo?`);
 }
 
 function Ranking({ rank }) {
@@ -334,6 +344,17 @@ function Ranking({ rank }) {
           <p className="faint">Ninguém sumido. Todos os clientes compraram nos últimos 30 dias. 👏</p>
         )}
       </div>
+    </div>
+  );
+}
+
+function DayGoal({ sold, goal }) {
+  const pct = Math.min(100, Math.round((sold / goal) * 100));
+  const done = sold >= goal;
+  return (
+    <div className="daygoal">
+      <div className="daygoal-bar"><i style={{ width: `${pct}%` }} className={done ? 'done' : ''} /></div>
+      <p>{done ? <>Meta do dia batida! 🎯 <b>+{money(sold - goal)}</b></> : <>Faltam <b>{money(goal - sold)}</b> para a meta de hoje ({money(goal)})</>}</p>
     </div>
   );
 }

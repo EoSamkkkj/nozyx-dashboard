@@ -17,7 +17,7 @@ function download(name, text, type) {
 
 export default function Settings({ data, commit, notify, storage }) {
   const s = data.settings;
-  const [f, setF] = useState({ name: s.name, accent: s.accent, goal: s.monthlyGoal ? moneyInput(s.monthlyGoal) : '' });
+  const [f, setF] = useState({ name: s.name, accent: s.accent, goal: s.monthlyGoal ? moneyInput(s.monthlyGoal) : '', daily: s.dailyGoal ? moneyInput(s.dailyGoal) : '' });
   const [error, setError] = useState('');
   const file = useRef(null);
   const set = (k) => (e) => setF((x) => ({ ...x, [k]: e.target.value }));
@@ -26,10 +26,11 @@ export default function Settings({ data, commit, notify, storage }) {
   async function save(e) {
     e.preventDefault();
     const goal = parseMoney(f.goal);
-    if (Number.isNaN(goal) || goal < 0) return setError('Meta inválida. Use, por exemplo, 3000 ou 3.000,00.');
+    const daily = parseMoney(f.daily);
+    if (Number.isNaN(goal) || goal < 0 || Number.isNaN(daily) || daily < 0) return setError('Meta inválida. Use, por exemplo, 3000 ou 3.000,00.');
     setError('');
     await commit((d) => {
-      d.settings = { name: f.name.trim() || 'Nozyx', accent: f.accent, monthlyGoal: goal };
+      d.settings = { name: f.name.trim() || 'Nozyx', accent: f.accent, monthlyGoal: goal, dailyGoal: daily };
     }, 'Configurações salvas.');
   }
 
@@ -60,6 +61,9 @@ export default function Settings({ data, commit, notify, storage }) {
           <Field label="Nome da agência"><input value={f.name} onChange={set('name')} /></Field>
           <Field label="Meta mensal de vendas" hint={s.monthlyGoal ? `Atual: ${money(s.monthlyGoal)}` : 'Deixe vazio para não usar meta.'}>
             <input inputMode="decimal" placeholder="Ex.: 3.000" value={f.goal} onChange={set('goal')} />
+          </Field>
+          <Field label="Meta do dia" hint={s.dailyGoal ? `Atual: ${money(s.dailyGoal)}` : 'Aparece no painel azul em "Hoje". Vazio = sem meta.'}>
+            <input inputMode="decimal" placeholder="Ex.: 150" value={f.daily} onChange={set('daily')} />
           </Field>
         </div>
         <Field label="Cor de destaque">

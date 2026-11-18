@@ -386,3 +386,19 @@ input.secret:not(:placeholder-shown) { letter-spacing: .12em; }
 .rank-pos.p2 { background: linear-gradient(135deg, #E6EEF7, #B9C6D6); color: #1F2430; }
 .rank-pos.p3 { background: linear-gradient(135deg, #F2C29B, #C98552); color: #1F2430; }
 .hide-values .hero-forecast b, .hide-values .forecast b { filter: blur(8px); }
+
+/* ---------- sequência, meta do dia, origem ---------- */
+.streak { display: inline-block; white-space: nowrap; margin-top: 8px; padding: 4px 10px; border-radius: 999px; font-size: 12px; font-weight: 700; color: #FFD9A0; background: rgba(255, 140, 50, .18); border: 1px solid rgba(255, 170, 80, .35); }
+.streak.wait { color: rgba(221,238,255,.85); background: rgba(9,14,24,.28); border-color: rgba(221,238,255,.18); }
+.daygoal { margin-top: 12px; max-width: 320px; }
+.daygoal-bar { height: 8px; border-radius: 999px; background: rgba(9,14,24,.35); overflow: hidden; }
+.daygoal-bar i { display: block; height: 100%; border-radius: inherit; background: linear-gradient(90deg, #9BD0FF, #fff); transition: width .6s ease; }
+.daygoal-bar i.done { background: linear-gradient(90deg, #7fe3b8, #3ccf91); }
+.daygoal p { margin-top: 6px; font-size: 12.5px; color: rgba(221,238,255,.85); }
+.daygoal b { color: #fff; }
+.hide-values .daygoal b { filter: blur(8px); }
+.chips-pick { display: flex; flex-wrap: wrap; gap: 6px; }
+.chips-pick button { font: inherit; font-size: 13px; padding: 6px 12px; border-radius: 999px; cursor: pointer; color: var(--muted); background: var(--panel); border: 1px solid var(--line-2); }
+.chips-pick button.on { color: #fff; background: var(--accent); border-color: var(--accent); }
+.btn.whats { background: #1faa59; border-color: #1faa59; color: #fff; }
+.receipt-img { width: 100%; max-width: 420px; align-self: center; border-radius: 16px; border: 1px solid var(--line-2); }

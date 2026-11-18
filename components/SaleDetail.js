@@ -2,9 +2,12 @@
 
 import { useState } from 'react';
 import { METHODS, STATUS, brDate, computeSale, money, parseMoney, todaySP, uid, validatePayment } from '@/lib/model';
-import { Field, FinChip, Modal, MoneyInput, StatusChip } from './ui';
+import { Field, FinChip, Icon, Modal, MoneyInput, StatusChip } from './ui';
+import Receipt from './Receipt';
+import { whatsLink } from '@/lib/whats';
 
-export default function SaleDetail({ data, sale, commit, onClose, editSale }) {
+export default function SaleDetail({ data, sale, commit, onClose, editSale, notify }) {
+  const [receipt, setReceipt] = useState(false);
   const c = computeSale(sale);
   const client = data.clients.find((x) => x.id === sale.clientId);
   const [p, setP] = useState({ amount: '', date: todaySP(), method: 'Pix', note: '' });
@@ -48,6 +51,10 @@ export default function SaleDetail({ data, sale, commit, onClose, editSale }) {
     if (ok) onClose();
   };
 
+  const first = (client?.name || '').split(' ')[0];
+  const charge = !c.cancelled && c.balance > 0 && whatsLink(client?.contact,
+    `Oi, ${first}! Tudo bem? Passando para lembrar do restante do ${sale.description || sale.planName} (${brDate(sale.date)}): falta ${money(c.balance)} de ${money(c.total)}. Pode ser no Pix. Obrigado! 🙏`);
+
   const fill = () => setP((x) => ({ ...x, amount: (c.balance / 100).toFixed(2).replace('.', ',') }));
 
   return (
@@ -58,6 +65,12 @@ export default function SaleDetail({ data, sale, commit, onClose, editSale }) {
           <StatusChip status={sale.status} />
           <span className="chip">{sale.planName}</span>
           <span className="chip">{sale.qty} vídeo{sale.qty > 1 ? 's' : ''}{sale.mode === 'package' ? ' · pacote' : ''}</span>
+        </div>
+
+        <div className="row">
+          <button className="btn sm" onClick={() => setReceipt(true)}><Icon name="baixar" size={15} /> Recibo em imagem</button>
+          {charge && <a className="btn sm whats" href={charge} target="_blank" rel="noreferrer">Cobrar no WhatsApp</a>}
+          {!c.cancelled && c.balance > 0 && !charge && <span className="faint" style={{ fontSize: 12.5 }}>Cadastre o WhatsApp do cliente para cobrar com um toque.</span>}
         </div>
 
         {c.review && (
@@ -129,6 +142,7 @@ export default function SaleDetail({ data, sale, commit, onClose, editSale }) {
           </div>
         </div>
       </div>
+      {receipt && <Receipt sale={sale} client={client} name={data.settings.name} notify={notify} onClose={() => setReceipt(false)} />}
     </Modal>
   );
 }

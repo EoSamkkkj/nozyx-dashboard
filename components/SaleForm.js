@@ -1,7 +1,7 @@
 'use client';
 
 import { useMemo, useState } from 'react';
-import { CUSTOM, METHODS, STATUS, computeSale, money, moneyInput, parseMoney, todaySP, uid, validatePayment, validateSale } from '@/lib/model';
+import { CUSTOM, METHODS, ORIGINS, STATUS, computeSale, money, moneyInput, parseMoney, todaySP, uid, validatePayment, validateSale } from '@/lib/model';
 import { Field, Modal, MoneyInput } from './ui';
 
 const NEW = '__novo';
@@ -25,6 +25,7 @@ export default function SaleForm({ data, commit, preset, onClose, openSale }) {
     discountReason: s0.discountReason || '',
     status: s0.status || 'iniciar',
     notes: s0.notes || '',
+    origin: s0.origin || '',
     payAmount: '',
     payDate: todaySP(),
     payMethod: 'Pix',
@@ -59,6 +60,7 @@ export default function SaleForm({ data, commit, preset, onClose, openSale }) {
     discountReason: f.discountReason.trim(),
     status: f.status,
     notes: f.notes.trim(),
+    origin: f.origin,
   }), [f, editing, planName]);
 
   const valid = !Number.isNaN(draft.unitPrice) && !Number.isNaN(draft.packageTotal) && !Number.isNaN(draft.addition) && !Number.isNaN(draft.discount);
@@ -138,6 +140,16 @@ export default function SaleForm({ data, commit, preset, onClose, openSale }) {
           <Field label="Quantidade de vídeos" required>
             <input type="number" min="1" step="1" value={f.qty} onChange={set('qty')} />
           </Field>
+        </div>
+
+        <div className="field">
+          <span>De onde veio o cliente</span>
+          <div className="chips-pick">
+            {ORIGINS.map((o) => (
+              <button type="button" key={o} className={f.origin === o ? 'on' : ''} onClick={() => setF((x) => ({ ...x, origin: x.origin === o ? '' : o }))}>{o}</button>
+            ))}
+          </div>
+          <span className="hint">Para saber quais canais trazem mais vendas.</span>
         </div>
 
         <Field label="Descrição do serviço" hint="Opcional. Ex.: Anúncio 9:16 de lançamento.">
