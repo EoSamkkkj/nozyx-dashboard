@@ -487,3 +487,26 @@ input.secret:not(:placeholder-shown) { letter-spacing: .12em; }
 @keyframes nzToast { 0% { opacity: 0; transform: translate(-50%, 30px) scale(.9); } 60% { opacity: 1; transform: translate(-50%, -6px) scale(1.02); } 100% { opacity: 1; transform: translate(-50%, 0); } }
 .toast { animation: nzToast .45s cubic-bezier(.2,.8,.3,1.2) both; }
 .alert { animation: nzBounce .45s backwards; }
+
+/* ---------- Cofre ---------- */
+.cofre-hero { position: relative; overflow: hidden; border-radius: 24px; padding: 20px 22px; margin-bottom: 14px; color: #fff; background: radial-gradient(120% 140% at 100% 0%, rgba(60,207,145,.35), transparent 55%), linear-gradient(145deg, #173a33, #12202a 60%, #11151D); border: 1px solid rgba(127,227,184,.22); box-shadow: 0 24px 50px -30px rgba(60,207,145,.6); }
+.cofre-periods { display: flex; flex-wrap: nowrap; overflow-x: auto; scrollbar-width: none; max-width: 100%; margin-bottom: 16px; background: rgba(9,14,24,.35); }
+.cofre-periods::-webkit-scrollbar { display: none; }
+.cofre-periods button { flex: none; }
+.cofre-label { font-size: 13px; color: rgba(221,238,255,.8); font-weight: 500; }
+.cofre-value { font-size: 40px; font-weight: 700; letter-spacing: -0.035em; line-height: 1.1; margin: 4px 0 2px; color: #b9f5d8; }
+.cofre-value.neg { color: #ffb3bd; }
+.cofre-sub { font-size: 12.5px; color: rgba(221,238,255,.6); }
+.cofre-stats { display: grid; grid-template-columns: repeat(3, 1fr); margin-top: 16px; border-radius: 16px; background: rgba(9,14,24,.32); border: 1px solid rgba(221,238,255,.1); }
+.cofre-stats div { padding: 11px 13px; display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.cofre-stats div + div { border-left: 1px solid rgba(221,238,255,.1); }
+.cofre-stats span { font-size: 11.5px; color: rgba(221,238,255,.7); }
+.cofre-stats b { font-size: 15px; white-space: nowrap; }
+.cofre-stats b.in, .v.in { color: #7ff0bd; }
+.cofre-stats b.out, .v.out { color: #ffb3bd; }
+.cofre-bar { height: 6px; margin-top: 12px; border-radius: 999px; background: rgba(127,240,189,.25); overflow: hidden; }
+.cofre-bar i { display: block; height: 100%; border-radius: inherit; background: linear-gradient(90deg, #ffcf8a, #ff8f9f); transition: width .6s ease; }
+.cat-ic { flex: none; display: grid; place-items: center; width: 34px; height: 34px; border-radius: 12px; background: var(--panel); border: 1px solid var(--line-2); font-size: 16px; }
+.x-mini { flex: none; width: 28px; height: 28px; border-radius: 50%; border: 1px solid var(--line-2); background: none; color: var(--faint); font-size: 16px; cursor: pointer; }
+.hide-values :is(.cofre-value, .cofre-stats b) { filter: blur(9px); }
+@media (max-width: 760px) { .cofre-hero { padding: 18px 16px; border-radius: 22px; } .cofre-value { font-size: 32px; } .cofre-stats b { font-size: 13.5px; } }

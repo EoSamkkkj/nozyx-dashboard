@@ -6,6 +6,7 @@ import Logo from './Logo';
 import { Icon } from './ui';
 import Overview from './Overview';
 import Sales from './Sales';
+import Cofre from './Cofre';
 import Clients from './Clients';
 import Plans from './Plans';
 import Settings from './Settings';
@@ -19,12 +20,13 @@ import { IntroContext } from './Intro';
 const TABS = [
   ['geral', 'Visão geral', 'Visão geral'],
   ['vendas', 'Vendas', 'Vendas'],
+  ['cofre', 'Cofre', 'Cofre'],
   ['clientes', 'Clientes', 'Clientes'],
   ['planos', 'Planos e preços', 'Planos'],
   ['config', 'Configurações', 'Ajustes'],
 ];
 
-const VIEW_TABS = ['geral', 'vendas', 'config'];
+const VIEW_TABS = ['geral', 'vendas', 'cofre', 'config'];
 
 export default function App({ initial, storage, role = 'admin' }) {
   const readOnly = role === 'viewer';
@@ -235,6 +237,7 @@ export default function App({ initial, storage, role = 'admin' }) {
           <div key={tab} className="tab-view">
           {tab === 'geral' && <Overview {...ctx} />}
           {tab === 'vendas' && <Sales {...ctx} />}
+          {tab === 'cofre' && <Cofre {...ctx} />}
           {tab === 'clientes' && <Clients {...ctx} />}
           {tab === 'planos' && <Plans {...ctx} />}
           {tab === 'config' && <Settings {...ctx} storage={storage} />}
