@@ -510,3 +510,13 @@ input.secret:not(:placeholder-shown) { letter-spacing: .12em; }
 .x-mini { flex: none; width: 28px; height: 28px; border-radius: 50%; border: 1px solid var(--line-2); background: none; color: var(--faint); font-size: 16px; cursor: pointer; }
 .hide-values :is(.cofre-value, .cofre-stats b) { filter: blur(9px); }
 @media (max-width: 760px) { .cofre-hero { padding: 18px 16px; border-radius: 22px; } .cofre-value { font-size: 32px; } .cofre-stats b { font-size: 13.5px; } }
+.cofre-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 14px; }
+.paste-list { list-style: none; margin: 0; padding: 0; max-height: 46vh; overflow-y: auto; border: 1px solid var(--line-2); border-radius: 14px; }
+.paste-list li { display: flex; align-items: center; gap: 10px; padding: 10px 12px; }
+.paste-list li + li { border-top: 1px solid var(--line-2); }
+.paste-list li.off { opacity: .45; }
+.paste-list .grow { display: flex; flex-direction: column; gap: 4px; min-width: 0; }
+.paste-list .grow b { font-size: 13.5px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.paste-list select { padding: 5px 8px; font-size: 12.5px; width: auto; max-width: 100%; }
+.paste-list input[type="checkbox"] { width: 18px; height: 18px; flex: none; accent-color: var(--accent); }
+.paste-list .v { white-space: nowrap; font-weight: 700; font-size: 13.5px; }
