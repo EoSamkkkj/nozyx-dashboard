@@ -6,7 +6,7 @@ import { PlanBars } from './Charts';
 import { CountUp } from './Intro';
 import { Field, Icon, Modal, MoneyInput } from './ui';
 
-const CAT_ICON = { 'Tráfego pago': '📣', Ferramentas: '🧰', Equipamento: '🎧', Freelancer: '🤝', Impostos: '🧾', 'Alimentação': '🛒', Transporte: '⛽', Pet: '🐾', 'Pix para pessoas': '💸', Retirada: '👛', Reserva: '🐷', Outros: '📦' };
+const CAT_ICON = { 'Tráfego pago': '📣', Ferramentas: '🧰', Equipamento: '🎧', Freelancer: '🤝', Impostos: '🧾', 'Alimentação': '🛒', Transporte: '⛽', Pet: '🐾', Comprinhas: '🛍️', Retirada: '👛', Reserva: '🐷', Outros: '📦' };
 const OPTS = PERIODS.filter(([k]) => k !== 'custom');
 
 /** Cofre: o que entrou, o que saiu (tráfego, ferramentas, retiradas) e o que sobrou. */
