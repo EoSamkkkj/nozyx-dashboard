@@ -520,3 +520,24 @@ input.secret:not(:placeholder-shown) { letter-spacing: .12em; }
 .paste-list select { padding: 5px 8px; font-size: 12.5px; width: auto; max-width: 100%; }
 .paste-list input[type="checkbox"] { width: 18px; height: 18px; flex: none; accent-color: var(--accent); }
 .paste-list .v { white-space: nowrap; font-weight: 700; font-size: 13.5px; }
+
+/* ---------- abertura: logo entra e sai ---------- */
+.splash { position: fixed; inset: 0; z-index: 200; display: grid; place-items: center; background: #11151D; animation: spBg .45s ease-in 1.85s forwards; pointer-events: none; }
+.splash-stage { position: relative; display: flex; flex-direction: column; align-items: center; gap: 18px; animation: spOut .55s cubic-bezier(.6,0,.8,.4) 1.7s forwards; }
+.splash-logo { overflow: visible; animation: spLogo .9s cubic-bezier(.3,1.5,.5,1) both; filter: drop-shadow(0 10px 30px rgba(74,152,255,.45)); }
+.splash-logo .sp-left { transform-box: fill-box; animation: spUp .5s cubic-bezier(.2,.9,.3,1.2) .05s both; }
+.splash-logo .sp-right { transform-box: fill-box; animation: spDown .5s cubic-bezier(.2,.9,.3,1.2) .15s both; }
+.splash-logo .sp-diag { transform-box: fill-box; transform-origin: 0 0; animation: spCut .45s cubic-bezier(.3,.8,.3,1) .3s both; }
+.splash-logo .sp-shine { animation: spShine .7s ease-in-out 1s both; }
+.splash-glow { position: absolute; top: 56px; left: 50%; width: 220px; height: 220px; margin: -110px 0 0 -110px; border-radius: 50%; background: radial-gradient(circle, rgba(74,152,255,.45), rgba(74,152,255,0) 65%); animation: spGlow 1.4s ease-out .35s both; }
+.splash-word { display: flex; gap: 6px; font-size: 17px; font-weight: 800; letter-spacing: .32em; color: #DDEEFF; margin: 0; padding-left: .32em; }
+.splash-word span { display: inline-block; animation: spLetter .45s cubic-bezier(.3,1.4,.5,1) both; }
+@keyframes spLogo { 0% { transform: scale(.55) rotate(-8deg); opacity: 0; } 55% { transform: scale(1.12) rotate(2deg); opacity: 1; } 75% { transform: scale(.96) rotate(0); } 100% { transform: none; opacity: 1; } }
+@keyframes spUp { 0% { transform: translateY(70%); opacity: 0; } 100% { transform: none; opacity: 1; } }
+@keyframes spDown { 0% { transform: translateY(-70%); opacity: 0; } 100% { transform: none; opacity: 1; } }
+@keyframes spCut { 0% { transform: scale(0); opacity: 0; } 100% { transform: none; opacity: 1; } }
+@keyframes spShine { 0% { transform: skewX(-20deg) translateX(0); } 100% { transform: skewX(-20deg) translateX(190px); } }
+@keyframes spGlow { 0% { transform: scale(.3); opacity: 0; } 40% { opacity: 1; } 100% { transform: scale(1.5); opacity: .25; } }
+@keyframes spLetter { 0% { transform: translateY(14px) scale(.6); opacity: 0; } 100% { transform: none; opacity: 1; } }
+@keyframes spOut { 0% { transform: none; opacity: 1; } 30% { transform: scale(.9); opacity: 1; } 100% { transform: scale(7); opacity: 0; } }
+@keyframes spBg { to { opacity: 0; visibility: hidden; } }

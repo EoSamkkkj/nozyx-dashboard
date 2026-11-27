@@ -16,6 +16,7 @@ import { useAppShell } from './AppSetup';
 import LockScreen, { useLock } from './Lock';
 import PullRefresh from './PullRefresh';
 import { IntroContext } from './Intro';
+import Splash from './Splash';
 
 const TABS = [
   ['geral', 'Visão geral', 'Visão geral'],
@@ -43,8 +44,10 @@ export default function App({ initial, storage, role = 'admin' }) {
   const [locked, unlock] = useLock();
   const [ready, setReady] = useState(false);
   const [intro, setIntro] = useState(true);
+  const [splash, setSplash] = useState(true);
+  const endSplash = useCallback(() => setSplash(false), []);
   useEffect(() => setReady(true), []);
-  const play = ready && !locked;
+  const play = ready && !locked && !splash;
   useEffect(() => {
     // janelas abrem fora do painel (no <body>), então a cor e o "esconder valores" valem lá também
     document.documentElement.style.setProperty('--accent', data.settings.accent);
@@ -262,7 +265,8 @@ export default function App({ initial, storage, role = 'admin' }) {
       {form && !readOnly && <SaleForm {...ctx} preset={form} onClose={() => setForm(null)} />}
       {detail && <SaleDetail {...ctx} sale={detail} onClose={() => setDetailId(null)} />}
       {toast && <div className="toast" role="status">{toast}</div>}
-      {locked && <LockScreen name={name} onUnlock={unlock} />}
+      {locked && !splash && <LockScreen name={name} onUnlock={unlock} />}
+      <Splash onDone={endSplash} />
     </div>
     </IntroContext.Provider>
   );
